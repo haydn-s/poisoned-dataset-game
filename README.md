@@ -50,6 +50,7 @@ Every output includes raw results, paired defense comparisons, summary statistic
 - [Prototype rules](docs/prototype-rules.md): two-player setup, turn sequence, scoring, and debrief.
 - [Evaluation plan](docs/evaluation-plan.md): threat model, exact policies, metrics, uncertainty, and limitations.
 - [Delivery roadmap](docs/roadmap.md): work within 9–15 hours per week and the November deadlines.
+- [Shareable playtest guide](playtest.md): player instructions and a short feedback form to send to volunteers.
 - [Playtest record](docs/playtest-record.md): an observation sheet for small formative sessions or solo walkthroughs.
 - [Initial prototype checks](docs/prototype-check.md): automated validation, development diagnostics, and outstanding physical checks.
 

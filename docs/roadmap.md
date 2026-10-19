@@ -14,6 +14,19 @@ Protect the November 8 evaluation target and November 13 printer submission by k
 
 The first three weeks provide approximately **27–45 hours before evaluation completion**. The small rule learner, synthetic data, and automatic runner fit this window better than a full video game. Keep development and main seeds separate while making revisions.
 
+## Physical prototype after the initial draft
+
+The intended deliverable includes **one professionally made physical copy**. The next phase after merging the initial draft is a prototype of the artwork, a printed rulebook, and a box. Develop these together with the playtest revisions so the physical game is ready for production planning before the final release week.
+
+| Workstream | Next prototype | Check before professional production |
+| --- | --- | --- |
+| Artwork and components | A consistent moon-colony visual direction; sample card fronts and backs, labels, audit tokens, and rule cards | Legible at actual size, features distinguishable without color alone, and no secret information exposed by backs or layout |
+| Printed rulebook | A compact booklet with setup, an illustrated round, tie order, scoring, and a quick reference | New players can complete a match; pages fit the proposed box and remain readable when printed |
+| Box and storage | A paper mockup of the box, cover layout, and a packing plan for all components | Fit the complete physical set, including movable labels and folded audit slips or envelopes, before choosing final dimensions |
+| Production preparation | Component inventory, editable source files, and vendor-specific print exports | Confirm the supplier's templates, bleed and safe areas, materials, price, proof process, and production plus shipping schedule against the November 23 deadline |
+
+Confirm supplier requirements and timing early, then test a home-printed physical proof before committing to professional production. Reserve time for one proof revision. Ordering the finished copy is a separate step after the specifications, quote, and delivery date are settled. Keep the November 8 evaluation and November 13 poster submission milestones protected while planning this work.
+
 ## Poster and final release
 
 **November 9–12:** reserve the poster production block for approximately 8–12 hours of layout, concise findings, figure integration, citations, proofreading, and export checks. Choose a poster at least **24 × 24 inches** and confirm the printer's required dimensions and file settings before final layout. Include the research question, game loop, threat model, actual results, failure case, and limitations. Use a legible link or QR code to the playable artifact and reproducibility materials.
