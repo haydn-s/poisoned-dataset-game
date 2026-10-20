@@ -1,8 +1,18 @@
 # Poisoned Dataset initial prototype checks
 
-October 19, 2026 · Draft 0.1 · Python 3.14.7
+October 19, 2026, updated October 20 · Draft 0.1 · Python 3.14.7, then 3.10.20, 3.11.17 and 3.13.16
 
 The initial prototype passed **15 automated tests**, including a manual rule-count example, tie order, attack ceilings, counted oracle access, separate scoring records, repeatable simulation exports, and scripted two-round matches with and without poisoning and auditing. Handcrafted cases verify that conflict auditing can miss consistently poisoned groups and can underperform random auditing when the correct label is the minority among copies.
+
+The print-kit update added seven tests, for **22** in total; all pass on Python 3.10.20, 3.11.17 and 3.13.16 as of October 20. The new tests check that:
+
+- Public sheets and card backs are byte-identical when the secret rule changes, so the art cannot leak answers.
+- Kit builds reproduce exactly.
+- Fold-over tags have both faces.
+- The rulebook's booklet page order covers every page once.
+- The box fits its contents and an 11 × 17 in sheet.
+- A raster cover image is embedded.
+- The generated grain texture is a valid, deterministic PNG.
 
 ## Development diagnostics
 
@@ -30,4 +40,4 @@ Choose another new output directory if that one already exists. The first develo
 
 ## Checks still needed
 
-The printable kit's public/secret separation and component counts passed structural checks. Label tags are 1.6 × 0.55 inch fold-overs (STORE on one side, RECYCLE on the other) that fit the 1.6 × 0.55 inch slot on each poker-size card. Every print file was rendered to PDF in headless Chromium at 100% and inspected; physical assembly, folding, and cutting still need a check. No human playtest or timing study has been completed. Next, print a kit, perform a timed walkthrough, and review the coarse 4/8 versus 8/8 scoring before freezing the mechanics.
+The printable kit's public/secret separation and component counts passed structural checks. Label tags are 1.6 × 0.55 inch fold-overs (STORE on one side, RECYCLE on the other) that fit the 1.6 × 0.55 inch slot on each poker-size card. Every print file was rendered to PDF in headless Chromium at 100% and inspected; the rendered seed-42 kit, rulebook, and box are committed in `print/kit-seed-42/`. Physical assembly, folding, and cutting still need a check. No human playtest or timing study has been completed. Next, print a kit, perform a timed walkthrough, and review the coarse 4/8 versus 8/8 scoring before freezing the mechanics.
