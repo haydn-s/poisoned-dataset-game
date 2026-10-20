@@ -65,6 +65,7 @@ Every output includes raw results, paired defense comparisons, summary statistic
 - [Prototype rules](docs/prototype-rules.md): two-player setup, turn sequence, scoring, and debrief.
 - [Evaluation plan](docs/evaluation-plan.md): threat model, exact policies, metrics, uncertainty, and limitations.
 - [Main evaluation results](docs/evaluation-results.md): protocol v1.0 run on seeds 1000–1199, primary contrast, figures, and a failure case.
+- [Poster](presentation/README.md): the 36 × 24 in showcase poster, generated from the committed results.
 - [Delivery roadmap](docs/roadmap.md): work within 9–15 hours per week and the November deadlines.
 - [Shareable playtest guide](playtest.md): player instructions and a short feedback form to send to volunteers.
 - [Playtest record](docs/playtest-record.md): an observation sheet for small formative sessions or solo walkthroughs.
@@ -90,6 +91,7 @@ poisoned_dataset/box.py          Box dielines, cover layout and packing plan
 poisoned_dataset/experiments.py  Paired simulation and result export
 poisoned_dataset/report.py       Figures and headline numbers from experiment outputs
 docs/                           Versioned design and evaluation drafts
+presentation/                   Poster generator, generated poster, figures and PDF
 tests/                          Mechanics and experiment-integrity checks
 ```
 
