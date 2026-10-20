@@ -6,7 +6,7 @@ The initial prototype passed **15 automated tests**, including a manual rule-cou
 
 ## Development diagnostics
 
-The development run used seeds **0–49**, 24 training cards, the full draft budget grid, and 200 bootstrap resamples. It produced **9,000 policy rows** and **3,000 paired differences**. These are engineering and design diagnostics; the main seed range 1000–1199 has not been run. The implementation and protocol have not yet undergone the planned November 1 freeze.
+The development run used seeds **0–49**, 24 training cards, the full draft budget grid, and 200 bootstrap resamples. It produced **9,000 policy rows** and **3,000 paired differences**. These are engineering and design diagnostics. The protocol was frozen as v1.0 on October 20, and the main seeds 1000–1199 were then run; see the [main evaluation results](evaluation-results.md).
 
 Mean final deployment accuracy at an attack ceiling of four flips and four audit tokens:
 

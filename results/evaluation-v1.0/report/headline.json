@@ -1,0 +1,59 @@
+{
+  "cell": {
+    "regime": "correlated",
+    "attack": "directed",
+    "attack_budget": 4,
+    "audit_budget": 4
+  },
+  "n_seeds": 200,
+  "clean_accuracy": 1.0,
+  "flips_used": {
+    "0": 1,
+    "1": 13,
+    "2": 24,
+    "3": 28,
+    "4": 134
+  },
+  "attack_switched_rule": 187,
+  "poisoned_accuracy": 0.5325,
+  "defenses": {
+    "conflict": {
+      "final_accuracy": 0.76,
+      "restored_true_rule": 91,
+      "corruption_found_per_seed": 1.46
+    },
+    "random": {
+      "final_accuracy": 0.6025,
+      "restored_true_rule": 28,
+      "corruption_found_per_seed": 0.585
+    },
+    "none": {
+      "final_accuracy": 0.5325,
+      "restored_true_rule": 0,
+      "corruption_found_per_seed": 0
+    }
+  },
+  "paired_difference": {
+    "mean": 0.1575,
+    "ci95": [
+      0.12,
+      0.195
+    ],
+    "wins": 73,
+    "ties": 117,
+    "losses": 10
+  },
+  "exploratory_by_visible_conflict": {
+    "visible": {
+      "switched_seeds": 78,
+      "conflict_restored": 68,
+      "random_restored": 18
+    },
+    "hidden": {
+      "switched_seeds": 109,
+      "conflict_restored": 23,
+      "random_restored": 10
+    }
+  },
+  "trace_seed": 1040
+}

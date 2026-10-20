@@ -48,10 +48,11 @@ python3 -m unittest discover -s tests -v
 python3 -m poisoned_dataset experiment --seeds 5 --bootstrap-resamples 100 --out artifacts/smoke
 ```
 
-The smoke command produces 900 simulation rows to check the pipeline. It is not the main evaluation. A provisional full run is:
+The smoke command produces 900 simulation rows to check the pipeline. It is not the main evaluation. The main run under the frozen protocol v1.0 is committed in [`results/evaluation-v1.0/`](results/evaluation-v1.0) and written up in the [main evaluation results](docs/evaluation-results.md). To reproduce it and its figures in new directories:
 
 ```sh
-python3 -m poisoned_dataset experiment --seed-start 1000 --seeds 200 --bootstrap-resamples 2000 --out artifacts/evaluation-v01
+python3 -m poisoned_dataset experiment --seed-start 1000 --seeds 200 --bootstrap-resamples 2000 --out artifacts/evaluation-v1.0-rerun
+python3 -m poisoned_dataset report --results results/evaluation-v1.0 --out artifacts/report-rerun
 ```
 
 Every output includes raw results, paired defense comparisons, summary statistics, percentile bootstrap intervals, generated scenarios, seeds, configuration, Python version, and Git revision/dirty status. Generate synthetic data locally; no dataset download is required. Record the interpreter version alongside results because exact pseudorandom sequences need not be portable across all Python versions.
@@ -61,6 +62,7 @@ Every output includes raw results, paired defense comparisons, summary statistic
 - [Design brief](docs/design-brief.md): contribution, scope, assumptions, and open design decisions.
 - [Prototype rules](docs/prototype-rules.md): two-player setup, turn sequence, scoring, and debrief.
 - [Evaluation plan](docs/evaluation-plan.md): threat model, exact policies, metrics, uncertainty, and limitations.
+- [Main evaluation results](docs/evaluation-results.md): protocol v1.0 run on seeds 1000–1199, primary contrast, figures, and a failure case.
 - [Delivery roadmap](docs/roadmap.md): work within 9–15 hours per week and the November deadlines.
 - [Shareable playtest guide](playtest.md): player instructions and a short feedback form to send to volunteers.
 - [Playtest record](docs/playtest-record.md): an observation sheet for small formative sessions or solo walkthroughs.
@@ -81,6 +83,7 @@ poisoned_dataset/art.py          Procedural, seeded SVG artwork shared by all pr
 poisoned_dataset/rulebook.py     Illustrated 12-page rulebook and booklet imposition
 poisoned_dataset/box.py          Box dielines, cover layout and packing plan
 poisoned_dataset/experiments.py  Paired simulation and result export
+poisoned_dataset/report.py       Figures and headline numbers from experiment outputs
 docs/                           Versioned design and evaluation drafts
 tests/                          Mechanics and experiment-integrity checks
 ```
