@@ -13,6 +13,7 @@ Copy this sheet for each match or solo walkthrough. Use participant aliases and 
 | Attack and audit budgets | |
 | Prior ML and tabletop experience | |
 | Number of people and roles | |
+| Match decided by score, poison found, tokens spent, or draw | |
 
 ## Observation record
 
@@ -24,6 +25,7 @@ Copy this sheet for each match or solo walkthrough. Use participant aliases and 
 | Changed card IDs | | |
 | Audited card IDs in order | | |
 | Audits that found changed labels | | |
+| Tokens spent | | |
 | Rule before and after audits | | |
 | Score out of eight | | |
 | Counting or bookkeeping errors | | |

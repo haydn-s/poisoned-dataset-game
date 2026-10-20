@@ -183,16 +183,20 @@ def rule_card(i: int, rule: str) -> str:
 
 
 def score_card() -> str:
-    boxes = lambda y: "".join(f'<rect x="{f(22 + k * 23)}" y="{y}" width="19" height="19" rx="3" fill="{C["paper"]}" '
-                              f'stroke="{INK}" stroke-width="1.3"/>' for k in range(8))
+    boxes = lambda x, y, n, size, gap: "".join(
+        f'<rect x="{f(x + k * gap)}" y="{y}" width="{size}" height="{size}" rx="{size / 6:.1f}" fill="{C["paper"]}" '
+        f'stroke="{INK}" stroke-width="1.2"/>' for k in range(n))
+    block = lambda y, title: (text(22, y, title, 9, INK, 800, "start", spacing=1) + boxes(22, y + 8, 8, 19, 23)
+                              + text(226, y + 23, "/ 8", 11, INK, 800, "end")
+                              + text(22, y + 42, "POISON FOUND", 7.5, INK, 800, "start", spacing=.6)
+                              + boxes(104, y + 33, 4, 12, 16)
+                              + text(22, y + 58, "TOKENS SPENT", 7.5, INK, 800, "start", spacing=.6)
+                              + boxes(104, y + 49, 4, 12, 16))
     body = (f'<g transform="translate(150 22) scale(.42)">{art.sorter("score", reach=False)}</g>'
             + text(22, 48, "DEPLOYMENT", 17, INK, 900, "start") + text(22, 68, "REPORT", 17, INK, 900, "start")
-            + text(22, 120, "ROUND 1 · DEFENDER A", 9, INK, 800, "start", spacing=1) + boxes(128)
-            + text(226, 143, "/ 8", 11, INK, 800, "end")
-            + text(22, 190, "ROUND 2 · DEFENDER B", 9, INK, 800, "start", spacing=1) + boxes(198)
-            + text(226, 213, "/ 8", 11, INK, 800, "end")
-            + para(125, 262, "Tick one box per test card the locked rule predicts correctly. "
-                   "The higher defender score wins; equal scores draw.", 9, 200, anchor="middle")[0])
+            + block(110, "ROUND 1 · DEFENDER A") + block(192, "ROUND 2 · DEFENDER B")
+            + para(125, 280, "Higher defender score wins. If tied, more poison found wins, then fewer tokens "
+                   "spent; otherwise a draw.", 9, 205, anchor="middle")[0])
     return card("score", "Score card", body)
 
 

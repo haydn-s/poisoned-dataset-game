@@ -56,9 +56,15 @@ The professionally printed copy replaces per-seed printing with a reusable set. 
 
 ## Winning the match
 
-Compare the scores players earned in their defender rounds. The higher defender score wins; equal scores are a draw. Both players have the same four-flip and four-audit budgets. Different scenarios are not guaranteed to have equal difficulty.
+Compare the scores players earned in their defender rounds. The higher defender score wins. If the scores are equal:
 
-With these three rules and the uniform eight-card test deck, any incorrect feature rule scores 4/8 and the true rule scores 8/8. This coarse scoring may produce frequent draws; retain draws while testing rather than introducing an untested tiebreaker.
+1. The player who found more poisoned labels while defending wins. An audit finds poison exactly when the trusted label differs from the current label.
+2. If that is equal too, the player who spent fewer audit tokens wins.
+3. Otherwise the match is a draw.
+
+Both players have the same four-flip and four-audit budgets. Different scenarios are not guaranteed to have equal difficulty.
+
+With these three rules and the uniform eight-card test deck, any incorrect feature rule scores 4/8 and the true rule scores 8/8. In simulation, half or more of matches tie on score, and the tiebreakers settle about half of those ties; see [match tiebreakers](match-tiebreakers.md). They decide only the match winner and change no round's accuracy, so evaluation protocol v1.0 is unaffected. The tiebreakers are provisional until playtests confirm them.
 
 ## Full information walkthrough
 

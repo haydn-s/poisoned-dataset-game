@@ -36,7 +36,7 @@ For each rule, count how many current training labels it predicts incorrectly. T
 2. **Defender inspects.** Look at the supplied training cards and labels, group cards if useful, and check which rule currently wins. Looking and counting are free.
 3. **Defender buys checks.** You have **four audit tokens**. Spend one to reveal one previously unchecked card's trusted label and replace that card's current label. A check costs a token even when the label was correct. Recalculate the winning rule after each check. A check repairs only the chosen card; identical-looking copies need their own paid checks. You may stop early. The helper's hints are optional suggestions, not proof of sabotage.
 4. **Lock and test.** Lock the rule selected by the error counts. Only then reveal the eight separate test cards and their reference labels. Score one point per correct prediction, out of eight. Keep test labels hidden during training and auditing.
-5. **Reveal and switch.** Discuss the changed labels and checks. Use the fresh second-round scenario and switch roles. Compare the scores you each earned as defender; the higher score wins. Equal scores are a draw.
+5. **Reveal and switch.** Discuss the changed labels and checks. Use the fresh second-round scenario and switch roles. Compare the scores you each earned as defender; the higher score wins. On equal scores, whoever found more changed labels while defending wins, then whoever spent fewer audit tokens; otherwise it is a draw. These tiebreakers are new, so tell us whether they felt fair.
 
 Ask your host whenever a rule is unclear. If comfortable, say what you are considering before making a choice. Honest confusion, unexpected tactics, and criticism are useful feedback.
 
@@ -49,6 +49,7 @@ Copy this section into a message and send it to the person who invited you. Shor
 - **Match seed, if available:** The helper prints this after the match.
 - **Approximate explanation time / playing time:**
 - **Defender scores:** Player A ___ / 8; Player B ___ / 8.
+- **If tied, poison found and tokens spent:** Player A ___ found, ___ spent; Player B ___ found, ___ spent. Did the tiebreak feel fair?
 - **Clarity, 1–5:** 1 = very confusing; 5 = very clear. What caused confusion?
 - **Enjoyment, 1–5:** 1 = not enjoyable; 5 = very enjoyable. What drove your rating?
 - **Which choice felt most consequential?** Mention the role and card if you remember.

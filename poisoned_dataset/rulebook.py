@@ -327,6 +327,7 @@ def round_two(edition: str = "seeded") -> str:
               "audited too.</li>"
               "<li>No free relabelling, deleting or adding cards in this version.</li>"
               "<li>The helper’s audit hints are suggestions from visible evidence, not proof of poisoning.</li>"
+              "<li>Tally as you go: an audit that changes a tag found poison; every audit spends a token.</li>"
               "</ul>")
     return page(8, body)
 
@@ -334,13 +335,13 @@ def round_two(edition: str = "seeded") -> str:
 def winning(edition: str = "seeded") -> str:
     report = nest(score_card(), 0, 0, 150)
     body = ('<div class="kicker">After two rounds</div><h1>Winning</h1>'
-            "<p>Compare the scores the two players earned as <b>defender</b>. The higher score wins; equal "
-            "scores are a draw. Both players have the same four-flip and four-audit budgets, but different "
-            "scenarios are not guaranteed to be equally hard.</p>"
+            "<p>Compare the scores the two players earned as <b>defender</b>. The higher score wins. If they "
+            "are equal, the player who found <b>more poisoned tags</b> as defender wins; if that is equal too, "
+            "the player who spent <b>fewer audit tokens</b> wins. Otherwise the match is a draw.</p>"
             + fig(150, 210, report, "Deployment report score card")
-            + '<p class="note">With three rules and an eight-card test deck that covers every combination, a '
-              "wrong rule always scores 4/8 and the true rule 8/8. Draws may be common. That is a known risk in "
-              "draft 0.1: record draws rather than inventing a tiebreaker.</p>"
+            + '<p class="note">A wrong rule always scores 4/8 and the true rule 8/8, so half or more of simulated '
+              "matches tie on score; the tiebreakers settle about half of those ties. They decide only who wins the "
+              "match, never a round’s score, and they are still being playtested.</p>"
               "<h2>Why the test deck is separate</h2>"
               "<p>The robot is judged on new cargo it never trained on, just as a deployed system is. The "
               "test cards never join the training data, and their reference labels stay sealed until the rule "
