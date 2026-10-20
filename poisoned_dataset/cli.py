@@ -112,10 +112,11 @@ def main() -> None:
     experiment.add_argument("--audit-budgets", type=budget_list, default=[0, 2, 4])
     experiment.add_argument("--bootstrap-resamples", type=int, default=1000)
     experiment.add_argument("--out", type=Path, required=True, help="New output directory")
-    components = sub.add_parser("components", help="Create printable public cards and private references")
+    components = sub.add_parser("components", help="Create the printable kit: cards, references, rulebook and box")
     components.add_argument("--seed", type=int, default=19)
     components.add_argument("--regime", choices=REGIMES, default="correlated")
     components.add_argument("--out", type=Path, required=True, help="New output directory")
+    components.add_argument("--cover-image", type=Path, help="Optional PNG/JPEG/WebP key art for the box lid")
     args = parser.parse_args()
     try:
         if args.command in ("demo", "play"):
@@ -148,9 +149,14 @@ def main() -> None:
                          args.bootstrap_resamples)
             print(f"Wrote {result['rows']} runs and {result['paired_rows']} paired comparisons to {args.out}")
         else:
-            from .components import build
-            build(args.out, args.seed, args.regime)
-            print(f"Wrote public.html, private.html and scenario.json to {args.out}")
+            from . import box, components, rulebook
+            if args.cover_image and not args.cover_image.is_file():
+                parser.error(f"Cover image not found: {args.cover_image}")
+            components.build(args.out, args.seed, args.regime)
+            rulebook.build(args.out)
+            box.build(args.out, args.cover_image)
+            print(f"Wrote public, private, backs, rulebook, rulebook-booklet and box HTML plus scenario.json "
+                  f"to {args.out}")
     except (ValueError, FileExistsError) as exc:
         parser.error(str(exc))
     except (EOFError, KeyboardInterrupt):

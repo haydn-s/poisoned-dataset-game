@@ -57,11 +57,11 @@ Copy this section into a message and send it to the person who invited you. Shor
 - **Did anything about the reveal surprise you?**
 - **What one change would most improve the next match?**
 
-If you played with printed pieces, also tell us which text, symbols, labels, or components were hard to read or handle. Artwork, the printed rulebook, and the box are still being developed.
+If you played with printed pieces, also tell us which text, symbols, labels, or components were hard to read or handle. A first pass of artwork, an illustrated rulebook, and a box mockup now exist; tell us which parts helped or got in the way.
 
 ## Notes for the host
 
-Prepare and separate the two rounds' private references before players arrive. For printed play, cut the pieces and prepare folded audit slips; include this preparation time in your own notes. Use a scenario whose answers the players have not seen. Keep the current four-flip/four-audit budgets for this test and record any deviations.
+Prepare and separate the two rounds' private references before players arrive. For printed play, cut the pieces, fold the tags and audit tokens, and Z-fold the audit slips; include this preparation time in your own notes. Use a scenario whose answers the players have not seen. Keep the current four-flip/four-audit budgets for this test and record any deviations.
 
 Explain the tie order and demonstrate an audit without revealing either round's true rule. Record rules questions, counting errors, requests for help, time spent on bookkeeping, and whether each role offered meaningful choices. Ask the feedback questions after both rounds so the prompts do not guide players' earlier decisions. Use the [host observation sheet](docs/playtest-record.md) for detailed notes. Ask permission before recording audio or video.
 

@@ -19,13 +19,23 @@ python3 -m poisoned_dataset play
 python3 -m poisoned_dataset play --seed 42 --attack-budget 4 --audit-budget 4
 ```
 
-For tabletop play, generate a two-round kit:
+For tabletop play, generate a two-round kit with its rulebook and box mockup:
 
 ```sh
 python3 -m poisoned_dataset components --seed 42 --out artifacts/kit-42
 ```
 
-Open `artifacts/kit-42/public.html` and `private.html` in a browser and print at 100% on US Letter paper. Public materials contain 48 training cards across two rounds, two eight-card test decks, three candidate rules, four audit tokens, a score card, and reusable label tokens. Keep the private reference and `scenario.json` away from the defender. Each private training slip can be folded and opened only for a paid audit. See [prototype rules](docs/prototype-rules.md) for setup and a complete match.
+Open the files in a browser and print at 100% (actual size):
+
+| File | Paper | Contents |
+| --- | --- | --- |
+| `public.html` | US Letter, landscape | 48 training cards, two eight-card test decks, three rule cards, a score card, two quick references, two role cards, 27 fold-over STORE/RECYCLE tags and four AUDIT/VERIFIED tokens |
+| `private.html` | US Letter, landscape | Each round's attacker setup panel, 24 Z-fold trusted audit slips and a sealed deployment key |
+| `backs.html` | US Letter, landscape | Optional card backs; print on the reverse of the matching sheets |
+| `rulebook.html` / `rulebook-booklet.html` | 5.5 × 8.5 in / Letter, duplex, flip on short edge | The 12-page illustrated rulebook, in reading order or imposed for folding and stapling |
+| `box.html` | 11 × 17 in, plus one Letter page | Lid and base dielines with cover art, and the packing plan |
+
+Cards are poker size (2.5 × 3.5 in), edge to edge with crop marks. Keep `private.html` and `scenario.json` away from the defender, and keep each round's private material apart. Add `--cover-image path/to/key-art.png` to put raster key art on the box lid instead of the generated cover. See [prototype rules](docs/prototype-rules.md) for setup and a complete match, and the [art direction](docs/art-direction.md) for the visual system.
 
 Generated output directories must be new; commands refuse to overwrite an existing directory. The `artifacts/` directory is ignored by Git. Keep important releases outside that scratch directory or add them intentionally when publishing a version.
 
@@ -53,6 +63,7 @@ Every output includes raw results, paired defense comparisons, summary statistic
 - [Shareable playtest guide](playtest.md): player instructions and a short feedback form to send to volunteers.
 - [Playtest record](docs/playtest-record.md): an observation sheet for small formative sessions or solo walkthroughs.
 - [Initial prototype checks](docs/prototype-check.md): automated validation, development diagnostics, and outstanding physical checks.
+- [Art direction](docs/art-direction.md): review of the earlier kit, the key-art brief, the visual system, and production notes.
 
 The learner selects the feature rule with the fewest training-label errors, breaking ties in the order **red, round, striped**. Defense policies cannot see the secret true rule or test labels. The deployment deck enumerates all eight feature combinations, so scores are exact for a uniform toy deployment distribution. Repeated feature combinations in training and testing are distinct records in this finite feature space.
 
@@ -63,7 +74,10 @@ This models label poisoning and trusted auditing of a deliberately small learner
 ```text
 poisoned_dataset/core.py         Learning, data generation, attacks, auditing
 poisoned_dataset/cli.py          Shared-terminal match and command-line interface
-poisoned_dataset/components.py   Printable HTML kit generator
+poisoned_dataset/components.py   Printable cards, tokens and private references
+poisoned_dataset/art.py          Procedural, seeded SVG artwork shared by all print pieces
+poisoned_dataset/rulebook.py     Illustrated 12-page rulebook and booklet imposition
+poisoned_dataset/box.py          Box dielines, cover layout and packing plan
 poisoned_dataset/experiments.py  Paired simulation and result export
 docs/                           Versioned design and evaluation drafts
 tests/                          Mechanics and experiment-integrity checks
