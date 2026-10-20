@@ -69,13 +69,14 @@ def card(kind: str, label: str, body: str, frame: bool = True) -> str:
             f'{body}{edge}</svg>')
 
 
-def header(ident: str, middle: str, round_number: int) -> str:
-    tone, ink = ROUND_TONE[round_number]
+def header(ident: str, middle: str, round_number: int, chip: tuple[str, str, str] | None = None) -> str:
+    """ID plate, card kind, and a chip naming the round (or, in the fixed edition, the deck)."""
+    label, tone, ink = chip or (f"ROUND {round_number}", *ROUND_TONE[round_number])
     return (f'<path d="{rrect(16, 16, 76, 30, 7)[0]}" fill="{INK}"/>'
             + text(54, 38, ident, 20, C["paper"], 800, family=MONO)
             + text(125, 35, middle, 8.5, INK, 800, spacing=1.2)
             + f'<path d="{rrect(158, 16, 76, 30, 15)[0]}" fill="{tone}" stroke="{INK}" stroke-width="1.5"/>'
-            + text(196, 36, f"ROUND {round_number}", 10.5, ink, 900, spacing=.6))
+            + text(196, 36, label, 10.5, ink, 900, spacing=.6))
 
 
 def panel(content: str, key: str) -> str:
@@ -110,12 +111,13 @@ def tag_slot(caption: str) -> str:
             + text(x + w / 2 + 14, y + h / 2 + 3.5, caption, 8.5, INK, 700, spacing=.8, extra='opacity=".6"'))
 
 
-def cargo_card(c: Card, round_number: int, test: bool = False) -> str:
+def cargo_card(c: Card, round_number: int, test: bool = False, chip: tuple[str, str, str] | None = None) -> str:
     kind = "test" if test else "training"
-    body = (header(c.id, "TEST" if test else "TRAINING", round_number)
+    body = (header(c.id, "TEST" if test else "TRAINING", round_number, chip)
             + panel(art.cargo(c.red, c.round, c.striped, c.id, night=test), (kind, c.id, round_number))
             + manifest(c) + tag_slot("PLACE PREDICTED TAG" if test else "HANG LABEL TAG HERE"))
-    return card(kind, f"Round {round_number} {kind} card {c.id}: {c.describe()}", body)
+    owner = chip[0].title() if chip else f"Round {round_number}"
+    return card(kind, f"{owner} {kind} card {c.id}: {c.describe()}", body)
 
 
 # --- Card backs (optional duplex sheet) ------------------------------------------
@@ -126,15 +128,17 @@ def hazard_ring() -> str:
             + art.hatch(ring, INK, 14, 7, 45, "ring", evenodd=True))
 
 
-def back(kind: str, round_number: int = 0) -> str:
+def back(kind: str, round_number: int = 0, tone: str | None = None, subtitle: str | None = None) -> str:
+    subtitle = subtitle if subtitle is not None else (f"ROUND {round_number}" if round_number else "")
     if kind == "test":
         scene = ('<rect width="250" height="350" fill="url(#night)"/>' + art.stars(f"back{round_number}", 250, 350, 60)
                  + f'<g transform="translate(125 132)">{art.porthole(70, f"tb{round_number}")}</g>')
         words = (text(125, 252, "DEPLOYMENT TEST", 17, C["paper"], 900, spacing=1.5)
-                 + text(125, 272, f"ROUND {round_number} · KEEP FACE DOWN", 9, C["paper"], 700, spacing=1)
+                 + text(125, 272, f"{subtitle} · KEEP FACE DOWN" if subtitle else "KEEP FACE DOWN", 9, C["paper"],
+                        700, spacing=1)
                  + text(125, 300, "Reveal only after the rule is locked.", 9, C["paper"], 500))
     else:
-        tone = ROUND_TONE[round_number][0] if round_number else C["amber"]
+        tone = tone or (ROUND_TONE[round_number][0] if round_number else C["amber"])
         bot = (f'<g transform="translate(66 150) scale(.62)">{art.sorter("back")}</g>' if kind == "training" else
                f'<g transform="translate(78 118) scale(.48)">{art.mallory("back")}</g>')
         scene = ('<rect width="250" height="350" fill="url(#shop)"/>'
@@ -142,23 +146,27 @@ def back(kind: str, round_number: int = 0) -> str:
                  f'<rect x="16" y="16" width="218" height="318" rx="9" fill="none" stroke="{tone}" stroke-width="3"/>'
                  f'<g transform="translate(38 28) scale(.27)">{art.logo()}</g>' + bot)
         words = (text(125, 300, "TRAINING DATA" if kind == "training" else "REFERENCE", 16, INK, 900, spacing=1.5)
-                 + (text(125, 318, f"ROUND {round_number}", 10, INK, 800, spacing=2) if round_number else ""))
+                 + (text(125, 318, subtitle, 10, INK, 800, spacing=2) if subtitle else ""))
     return card(f"back-{kind}", f"{kind} card back", scene + art.grain(art.box(250, 350), "back", .5) + words,
                 frame=False)
 
 
 # --- Reference cards ---------------------------------------------------------------
 
+def sort_columns(rule: str, y: float = 104) -> str:
+    """STORE and RECYCLE tags, each above the four cargo types the rule sends there."""
+    column = lambda x, label, group: (
+        f'<g transform="translate({x} {y}) scale(.62)">{art.tag(label, 160, 55, "rc" + label)}</g>'
+        + "".join(f'<g transform="translate({x + 24 + (k % 2) * 46} {y + 56 + (k // 2) * 44})">'
+                  f'{art.cargo_icon(c.red, c.round, c.striped, 34)}</g>' for k, c in enumerate(group)))
+    return (column(22, "STORE", [c for c in test_deck() if predict(rule, c)])
+            + column(132, "RECYCLE", [c for c in test_deck() if not predict(rule, c)]))
+
+
 def rule_card(i: int, rule: str) -> str:
-    stores = [c for c in test_deck() if predict(rule, c)]
-    recycles = [c for c in test_deck() if not predict(rule, c)]
     later, earlier = RULES[i + 1:], RULES[:i]
     tie = (f"Wins ties against {' and '.join(later)}." if later else "") + (
         f" Loses ties to {' and '.join(earlier)}." if earlier else "")
-    column = lambda x, label, group: (
-        f'<g transform="translate({x} 104) scale(.62)">{art.tag(label, 160, 55, "rc" + label)}</g>'
-        + "".join(f'<g transform="translate({x + 24 + (k % 2) * 46} {160 + (k // 2) * 44})">'
-                  f'{art.cargo_icon(c.red, c.round, c.striped, 34)}</g>' for k, c in enumerate(group)))
     tally = "".join(f'<rect x="{f(22 + (k % 12) * 17.4)}" y="{256 + (k // 12) * 18}" width="14" height="14" rx="2" '
                     f'fill="{C["paper"]}" stroke="{INK}" stroke-width="1.1"/>' for k in range(24))
     nut = art.hexagon(206, 44, 27)
@@ -168,7 +176,7 @@ def rule_card(i: int, rule: str) -> str:
             + text(206, 52, str(i + 1), 24, INK, 900) + text(206, 84, "TIE ORDER", 7, INK, 800, spacing=.8)
             + text(125, 96, f"STORE if {rule}; otherwise RECYCLE.", 10.5, INK, 700)
             + f'<path d="M125 106V236" stroke="{INK}" stroke-width="1" stroke-dasharray="3 3"/>'
-            + column(22, "STORE", stores) + column(132, "RECYCLE", recycles)
+            + sort_columns(rule)
             + text(22, 250, "COUNT TRAINING ERRORS", 8, INK, 800, "start", spacing=1) + tally
             + para(125, 312, tie, 8.5, 200, anchor="middle")[0])
     return card("rule", f"Rule {i + 1}: STORE if {rule}", body)
@@ -196,9 +204,9 @@ STEPS = ("Attacker secretly flips up to 4 tags.",
          "Reveal flips and audits; switch roles.")
 
 
-def aid_card() -> str:
+def aid_card(steps: tuple[str, ...] = STEPS) -> str:
     out, y = [], 66
-    for n, step in enumerate(STEPS, 1):
+    for n, step in enumerate(steps, 1):
         out.append(f'<circle cx="30" cy="{y - 4}" r="9.5" fill="{C["mustard"]}" stroke="{INK}" stroke-width="1.3"/>'
                    + text(30, y, str(n), 10.5, INK, 900))
         svg, lines = para(46, y, step, 10.5, 184, lead=1.25, weight=600)
@@ -209,14 +217,14 @@ def aid_card() -> str:
     return card("aid", "Quick reference", body)
 
 
-def role_card(role: str) -> str:
+def role_card(role: str, blurb: str | None = None) -> str:
     attacker = role == "ATTACKER"
     figure = (f'<g transform="translate(46 70) scale(.58)">{art.mallory("role")}</g>' if attacker else
               f'<g transform="translate(40 92) scale(.84)">{art.sorter("role")}</g>'
               f'<g transform="translate(192 120)">{art.hexbolt("VERIFIED", 26)}</g>')
-    blurb = ("You know the true rule and the clean labels. Before the defender looks, flip up to four tags."
-             if attacker else
-             "Inspect the tags, spend up to four audits, then lock the rule your sorter learns.")
+    blurb = blurb or ("You know the true rule and the clean labels. Before the defender looks, flip up to four tags."
+                      if attacker else
+                      "Inspect the tags, spend up to four audits, then lock the rule your sorter learns.")
     scene = (f'<svg x="12" y="52" width="226" height="200" viewBox="0 0 226 200">'
              f'<rect width="226" height="200" fill="url(#shop)"/>{figure}</svg>'
              f'<path d="{rrect(12, 52, 226, 200, 8)[0]}" fill="none" stroke="{INK}" stroke-width="2.4"/>')

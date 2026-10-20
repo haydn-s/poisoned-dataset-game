@@ -39,6 +39,8 @@ Cards are poker size (2.5 × 3.5 in), edge to edge with crop marks. Keep `privat
 
 A complete rendered kit is committed in [`print/kit-seed-42/`](print/kit-seed-42): every HTML file above, a PDF of each, `scenario.json`, and `box-lid-art.png` (the lid cover at 240 dpi). The rulebook and box files do not depend on the seed. That folder includes seed 42's private answers, so treat seeds 42 and 43 as spoiled for real play and generate a fresh seed instead.
 
+For the professionally printed copy, `--edition fixed` builds a reusable set instead: four fixed training decks, three truth cards drawn in secret, and sixteen reference cards that replace the private slips and keys, so nothing is printed per game. It writes `cards.html` (one-sided), `duplex.html` (double-sided), `backs.html`, the edition's rulebook, and its box; a rendered copy is in [`print/fixed-edition/`](print/fixed-edition). See the [fixed-deck edition](docs/fixed-deck-edition.md) for the rules changes and how the decks were chosen.
+
 Generated output directories must be new; commands refuse to overwrite an existing directory. The `artifacts/` directory is ignored by Git. Keep important releases outside that scratch directory or add them intentionally when publishing a version.
 
 ## Inspect and reproduce
@@ -66,6 +68,7 @@ Every output includes raw results, paired defense comparisons, summary statistic
 - [Playtest record](docs/playtest-record.md): an observation sheet for small formative sessions or solo walkthroughs.
 - [Initial prototype checks](docs/prototype-check.md): automated validation, development diagnostics, and outstanding physical checks.
 - [Art direction](docs/art-direction.md): review of the earlier kit, the key-art brief, the visual system, and production notes.
+- [Fixed-deck edition](docs/fixed-deck-edition.md): the reusable printed set, its rules changes, and the deck selection.
 
 The learner selects the feature rule with the fewest training-label errors, breaking ties in the order **red, round, striped**. Defense policies cannot see the secret true rule or test labels. The deployment deck enumerates all eight feature combinations, so scores are exact for a uniform toy deployment distribution. Repeated feature combinations in training and testing are distinct records in this finite feature space.
 
@@ -77,6 +80,8 @@ This models label poisoning and trusted auditing of a deliberately small learner
 poisoned_dataset/core.py         Learning, data generation, attacks, auditing
 poisoned_dataset/cli.py          Shared-terminal match and command-line interface
 poisoned_dataset/components.py   Printable cards, tokens and private references
+poisoned_dataset/decks.py        Fixed decks for the printed edition, chosen from development seeds
+poisoned_dataset/edition.py      The fixed-deck edition: truth cards, reference cards, print sheets
 poisoned_dataset/art.py          Procedural, seeded SVG artwork shared by all print pieces
 poisoned_dataset/rulebook.py     Illustrated 12-page rulebook and booklet imposition
 poisoned_dataset/box.py          Box dielines, cover layout and packing plan

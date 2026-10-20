@@ -20,6 +20,27 @@ LID = (BASE[0] + CLEARANCE, BASE[1] + CLEARANCE, BASE[2])
 BLEED, TAB = .125, .5
 WELL = (2.7, 3.7)                 # one poker-card well, with finger room
 RULEBOOK = (5.5, 8.5)
+PACKING = {
+    "seeded": {
+        "contents": ("48 training cards", "16 test cards", "3 rule cards", "Score card and 2 quick references",
+                     "2 role cards", f"{TAGS + SPARE_TAGS} fold-over STORE/RECYCLE tags", "4 audit tokens",
+                     "48 sealed audit slips and 2 deployment keys", "12-page rulebook"),
+        "wells": (("ROUND 1", "24 training + 8 test"), ("ROUND 2", "24 training + 8 test"),
+                  ("REFERENCE", "rules, score, aids, roles, 2 keys")),
+        "strip": (("TAGS", f"{TAGS + SPARE_TAGS} folded tags", 2.2), ("TOKENS", "4 audit tokens", 1.5),
+                  ("PRIVATE R1", "24 slips", 2.2), ("PRIVATE R2", "24 slips", 2.2)),
+        "check": "Private slips travel in their own envelopes so the defender never handles them before an audit.",
+    },
+    "fixed": {
+        "contents": ("96 training cards in four decks", "8 test cards", "3 truth cards", "16 reference cards",
+                     "3 rule cards", "Score card and 2 quick references", "2 role cards",
+                     f"{TAGS + SPARE_TAGS} fold-over STORE/RECYCLE tags", "4 audit tokens", "12-page rulebook"),
+        "wells": (("DECKS A + B", "48 training cards"), ("DECKS C + D", "48 training cards"),
+                  ("REFERENCE", "test, truth, reference, rules, aids")),
+        "strip": (("TAGS", f"{TAGS + SPARE_TAGS} folded tags", 4.1), ("TOKENS", "4 audit tokens", 4.1)),
+        "check": "Unused truth and reference cards go back face down in the reference well between rounds.",
+    },
+}
 
 STYLE = """
 @page sheet { size: 17in 11in; margin: 0; }
@@ -102,12 +123,10 @@ def cover_top(L: float, W: float, image: str = "") -> str:
     return scene + logo
 
 
-def back_panel(L: float, W: float) -> str:
+def back_panel(L: float, W: float, edition: str = "seeded") -> str:
     """The underside of the base: what the game is, what is inside, how a round goes."""
     Lu, Wu, b = inches(L), inches(W), inches(BLEED)
-    contents = ("48 training cards", "16 test cards", "3 rule cards", "Score card and 2 quick references",
-                "2 role cards", f"{TAGS + SPARE_TAGS} fold-over STORE/RECYCLE tags", "4 audit tokens",
-                "48 sealed audit slips and 2 deployment keys", "12-page rulebook")
+    contents = PACKING[edition]["contents"]
     steps = ("Poison: flip up to four tags in secret.", "Audit: spend four tokens to check labels.",
              "Deploy: lock the rule and score eight new cargo.")
     blurb = ("A rival robot has swapped some labels in your training data. Count, suspect, spend your few "
@@ -181,12 +200,11 @@ def sheet_svg(L: float, W: float, D: float, artwork: str, title: str, note: str)
             f'<path d="{fold}" fill="none" stroke="{INK}" stroke-width="1.2" stroke-dasharray="6 4"/></g></svg>')
 
 
-def packing_plan() -> str:
+def packing_plan(edition: str = "seeded") -> str:
     L, W, D = BASE
     s = 70  # pixels per inch in this diagram
     wells = []
-    for k, (name, items) in enumerate((("ROUND 1", "24 training + 8 test"), ("ROUND 2", "24 training + 8 test"),
-                                       ("REFERENCE", "rules, score, aids, roles, 2 keys"))):
+    for k, (name, items) in enumerate(PACKING[edition]["wells"]):
         x = 20 + .1 * s + k * (WELL[0] + .1) * s
         wells.append(f'<rect x="{f(x)}" y="{f(20 + .1 * s)}" width="{f(WELL[0] * s)}" height="{f(WELL[1] * s)}" rx="6" '
                      f'fill="{C["paper_dk"]}" stroke="{INK}" stroke-width="1.4"/>'
@@ -195,11 +213,9 @@ def packing_plan() -> str:
                      + text(x + WELL[0] * s / 2, 20 + 1.9 * s, name, 12, INK, 900)
                      + text(x + WELL[0] * s / 2, 20 + 2.15 * s, items, 9, INK, 500))
     y2 = 20 + (WELL[1] + .2) * s
-    strip = [("TAGS", f"{TAGS + SPARE_TAGS} folded tags", 2.2), ("TOKENS", "4 audit tokens", 1.5),
-             ("PRIVATE R1", "24 slips", 2.2), ("PRIVATE R2", "24 slips", 2.2)]
     x = 20 + .1 * s
-    for name, items, width in strip:
-        wells.append(f'<rect x="{f(x)}" y="{f(y2)}" width="{f(width * s)}" height="{f((W - WELL[1] - .4) * s)}" rx="6" '
+    for name, items, width in PACKING[edition]["strip"]:
+        wells.append(f'<rect x="{f(x)}" y="{f(y2)}" width="{f(width * s)}" height="{f((W - WELL[1] - .6) * s)}" rx="6" '
                      f'fill="{C["paper_dk"] if "PRIVATE" not in name else "#e9c9bf"}" stroke="{INK}" stroke-width="1.4"/>'
                      + text(x + width * s / 2, y2 + .55 * s, name, 11, INK if "PRIVATE" not in name else C["red_dk"], 900)
                      + text(x + width * s / 2, y2 + .8 * s, items, 9, INK, 500))
@@ -207,7 +223,7 @@ def packing_plan() -> str:
     book = (f'<rect x="{f(20 + (L - RULEBOOK[1]) / 2 * s)}" y="{f(20 + (W - RULEBOOK[0]) / 2 * s)}" '
             f'width="{f(RULEBOOK[1] * s)}" height="{f(RULEBOOK[0] * s)}" rx="4" fill="none" stroke="{C["red_dk"]}" '
             f'stroke-width="2" stroke-dasharray="10 6"/>'
-            + text(20 + L * s / 2, 20 + W * s - 10, "rulebook (5.5 x 8.5 in) lies on top", 10, C["red_dk"], 800))
+            + text(20 + L * s / 2, 20 + W * s - 16, "rulebook (5.5 x 8.5 in) lies on top", 10, C["red_dk"], 800))
     plan = (f'<svg viewBox="0 0 {f(L * s + 40)} {f(W * s + 40)}" style="width:5in" role="img" '
             f'aria-label="Top-down packing plan of the base">'
             f'<rect x="20" y="20" width="{f(L * s)}" height="{f(W * s)}" rx="8" fill="#fff" stroke="{INK}" '
@@ -225,7 +241,7 @@ def packing_plan() -> str:
               "Board thickness changes the clearance: rigid box board needs about 0.1 in more than cardstock.",
               "Confirm the supplier's own template, bleed, safe area, proof process, price and delivery date "
               "against the November 23 deadline before ordering.",
-              "Private slips travel in their own envelopes so the defender never handles them before an audit.")
+              PACKING[edition]["check"])
     return (f'<section class="letter"><h1>Packing plan and box specification</h1>'
             f'<p>Telescoping two-piece box. Everything fits in one layer under the rulebook.</p>'
             f'<div class="cols"><div>{plan}</div><div><h2>Dimensions</h2><table>{table}</table>'
@@ -240,17 +256,17 @@ def image_uri(path: Path) -> str:
     return f"data:{kind};base64,{b64encode(path.read_bytes()).decode('ascii')}"
 
 
-def build(out: Path, cover_image: Path | None = None) -> None:
+def build(out: Path, cover_image: Path | None = None, edition: str = "seeded") -> None:
     image = image_uri(cover_image) if cover_image else ""
     L, W, D = LID
     lid = sheet_svg(L, W, D, panel_art(L, W, D, cover_top(L, W, image), lid_walls(), "lid"),
                     "Lid dieline", "Printed side shown. Cut, score the dashed folds, fold the walls down and glue "
                                    "the tabs inside the short walls.")
     bL, bW, bD = BASE
-    base = sheet_svg(bL, bW, bD, panel_art(bL, bW, bD, back_panel(bL, bW), {}, "base"),
+    base = sheet_svg(bL, bW, bD, panel_art(bL, bW, bD, back_panel(bL, bW, edition), {}, "base"),
                      "Base dieline", "The centre panel is the underside of the box. Fold the walls up, printed side "
                                      "out, and glue the tabs inside the short walls.")
-    body = f'<section class="tabloid">{lid}</section><section class="tabloid">{base}</section>{packing_plan()}'
+    body = f'<section class="tabloid">{lid}</section><section class="tabloid">{base}</section>{packing_plan(edition)}'
     (out / "box.html").write_text(
         '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Poisoned Dataset box mockup</title>'
         f"<style>{STYLE}</style></head><body>{art.defs()}{body}</body></html>\n", encoding="utf-8")
