@@ -90,7 +90,7 @@ def grain_tile(size: int = 192) -> str:
             if fine > .66:
                 px[i:i + 4] = (42, 28, 20, min(200, int((fine - .66) * 700)))
             elif coarse > .55:
-                px[i:i + 4] = (255, 244, 220, min(80, int((coarse - .55) * 400)))
+                px[i:i + 4] = (255, 244, 220, min(28, int((coarse - .55) * 160)))
     return "data:image/png;base64," + b64encode(_png(size, size, px)).decode("ascii")
 
 
