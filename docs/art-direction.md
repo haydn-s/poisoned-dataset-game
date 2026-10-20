@@ -96,7 +96,7 @@ The art is procedural SVG in `poisoned_dataset/art.py`. It has no image files an
 
 - Cards are poker size. Home kits print edge to edge on Letter with paper-coloured edges that hide small cutting errors. A vendor export would need 0.125 in bleed per card; the card art already extends to the trim, so this needs an export step, not a redesign.
 - The box is a telescoping two-piece box: the base is 8.75 × 5.75 × 1.5 in and the lid is 0.0625 in larger. The half-letter rulebook lies on top of three card wells and a front strip for tags, tokens, and the two private-slip envelopes. The dielines are for a cardstock mockup; confirm a supplier template before ordering.
-- A professionally printed copy cannot regenerate seeded decks. One option to evaluate: print fixed training decks and keep only the private references seed-specific. The true rule is drawn independently of the training cards, so one fixed deck can serve all three secret rules. This would change setup and must be decided and tested before any production order.
+- A professionally printed copy cannot regenerate seeded decks. Decided: the [fixed-deck edition](fixed-deck-edition.md) prints four fixed decks, three truth cards, and sixteen reference cards once. Nothing is seed-specific, so no private sheets are needed.
 
 ## Checks before the art is frozen
 

@@ -50,6 +50,10 @@ A verified card cannot be audited again. A check repairs only its own label; an 
 
 The helper displays conflict-policy hints, but the human defender may audit any eligible card. A hint is a choice suggested by visible evidence, not a guarantee that the label is poisoned.
 
+## Fixed-deck edition
+
+The professionally printed copy replaces per-seed printing with a reusable set. Use one of the four fixed training decks not yet used in the match. In secret, the attacker draws one of three truth cards, tags every card by it, and lays a face-down **reference row**: for each of the eight cargo types, the reference card whose label agrees with the truth. An audit turns over the reference card for the audited card's cargo type, and the tag is set to match. At scoring, reveal the truth card and turn every reference card face up. If any reference card disagrees with the truth card, the defender scores 8 for the round. Rules, budgets, and tie order are otherwise unchanged; see the [fixed-deck edition](fixed-deck-edition.md).
+
 ## Winning the match
 
 Compare the scores players earned in their defender rounds. The higher defender score wins; equal scores are a draw. Both players have the same four-flip and four-audit budgets. Different scenarios are not guaranteed to have equal difficulty.

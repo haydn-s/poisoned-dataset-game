@@ -9,6 +9,7 @@ from pathlib import Path
 
 from . import art
 from .art import C, INK, f, text
+from . import edition as fixed
 from .components import aid_card, back, cargo_card, role_card, rule_card, score_card, slip
 from .core import LABELS, RULES, Card, errors, fit, predict
 
@@ -49,6 +50,28 @@ li { margin-bottom: .04in; }
 EXAMPLE = (Card("C01", 1, 0, 0), Card("C02", 0, 1, 0), Card("C03", 1, 1, 1), Card("C04", 0, 0, 1))
 EXAMPLE_LABELS = (1, 0, 1, 0)
 
+AUDIT_COPY = {
+    "seeded": "<p>Up to <b>four</b>, one at a time. Name an unaudited card and pay a token. Open that card’s "
+              "sealed slip and turn its tag to the trusted label, even if it was already right. Flip the "
+              "token to <b>VERIFIED</b> and leave it on the card. Recount after every audit.</p>",
+    "fixed": "<p>Up to <b>four</b>, one at a time. Name an unaudited card and pay a token. Turn over the "
+             "reference card for its cargo type and turn the card’s tag to match, even if it was already right. "
+             "Flip the token to <b>VERIFIED</b> and leave it on the card. Recount after every audit.</p>",
+}
+SCORE_COPY = {
+    "seeded": "<p>Turn the eight test cards over. For each, place the tag the locked rule predicts, then "
+              "open the sealed deployment key. Score one point per correct prediction, out of eight.</p>",
+    "fixed": "<p>Reveal the truth card. For each of the eight test cards, place the tag the locked rule predicts; "
+             "it scores a point if the truth card agrees. Then turn every reference card face up. If any "
+             "disagrees with the truth card, the setup was wrong and the defender scores 8.</p>",
+}
+SWITCH_COPY = {
+    "seeded": "<p>Reveal the true rule, the flipped tags and the audits. Talk about what changed the "
+              "learned rule. Then set out round two’s cards and switch attacker and defender.</p>",
+    "fixed": "<p>Reveal the flipped tags and the audits, and talk about what changed the learned rule. Return "
+             "the truth and reference cards to the box, set out an unused deck, and switch roles.</p>",
+}
+
 
 def bg(fill: str = C["paper"], scene: str = "") -> str:
     return (f'<svg class="bg" viewBox="0 0 550 850" aria-hidden="true"><rect width="550" height="850" fill="{fill}"/>'
@@ -76,7 +99,7 @@ def page(n: int, body: str, background: str = "", dark: bool = False) -> str:
             f'<div class="content{" dark" if dark else ""}">{body}</div>{folio(n, dark) if n > 1 else ""}</section>')
 
 
-def cover() -> str:
+def cover(edition: str = "seeded") -> str:
     scene = (f'<rect width="550" height="850" fill="url(#shop)"/>'
              f'<g transform="translate(0 480) scale(.6111)">{art.cover_scene("book")}</g>'
              f'<rect y="470" width="550" height="60" fill="url(#fade)"/>'
@@ -87,7 +110,7 @@ def cover() -> str:
     return page(1, "", bg(scene=scene))
 
 
-def mission() -> str:
+def mission(edition: str = "seeded") -> str:
     held = f'<g transform="translate(176 80) rotate(84)">{art.tag("", 54, 22, "bk", blank=True)}</g>'
     duo = (f'<g transform="translate(0 6) scale(.6)">{art.mallory("book")}</g>'
            f'<g transform="translate(230 70) scale(.78)">{art.sorter("book", holding=held)}</g>')
@@ -112,7 +135,9 @@ def mission() -> str:
     return page(2, body)
 
 
-def components() -> str:
+def components(edition: str = "seeded") -> str:
+    if edition == "fixed":
+        return fixed_components()
     mini = lambda svg: nest(svg, 0, 0, 92)
     item = lambda w, h, svg, title, note: (f'<figure>{fig(w, h, svg, title)}<b>{escape(title)}</b>'
                                            f'{escape(note)}</figure>')
@@ -141,9 +166,12 @@ def components() -> str:
     return page(3, body)
 
 
-def anatomy() -> str:
-    card = nest(cargo_card(Card("C07", 1, 1, 1), 1), 24, 8, 210)
-    marks = [(1, 14, 34, "Card ID and round. Audits and scores name cards by ID."),
+def anatomy(edition: str = "seeded") -> str:
+    sample = (cargo_card(Card("A07", 1, 1, 1), 0, chip=("DECK A", *fixed.DECK_TONE["A"])) if edition == "fixed"
+              else cargo_card(Card("C07", 1, 1, 1), 1))
+    card = nest(sample, 24, 8, 210)
+    owner = "deck" if edition == "fixed" else "round"
+    marks = [(1, 14, 34, f"Card ID and {owner}. Audits and scores name cards by ID."),
              (2, 14, 120, "The cargo. Three features: colour, shape and pattern."),
              (3, 14, 205, "The manifest spells out each feature, so colour is never the only cue."),
              (4, 14, 257, "Hang the label tag here. The label is separate from the cargo.")]
@@ -168,7 +196,7 @@ def anatomy() -> str:
     return page(4, body)
 
 
-def learner() -> str:
+def learner(edition: str = "seeded") -> str:
     counts = errors(EXAMPLE, EXAMPLE_LABELS)
     winner = fit(EXAMPLE, EXAMPLE_LABELS)
     rows = []
@@ -209,7 +237,9 @@ def learner() -> str:
     return page(5, body)
 
 
-def setup() -> str:
+def setup(edition: str = "seeded") -> str:
+    if edition == "fixed":
+        return fixed_setup()
     lay = "".join(nest(cargo_card(Card(f"C{k + 1:02}", k % 2, (k // 2) % 2, k % 3 == 0), 1), 6 + k * 46, 6, 40)
                   for k in range(6))
     body = ('<div class="kicker">Before each round</div><h1>Setup</h1>'
@@ -271,7 +301,7 @@ def step(n: int, kind: str, title: str, copy: str) -> str:
             f"{copy}</div></div>")
 
 
-def round_one() -> str:
+def round_one(edition: str = "seeded") -> str:
     body = ('<div class="kicker">Each round</div><h1>Playing a round</h1>'
             + step(1, "poison", "Secret poisoning",
                    "<p>With the defender looking away, the attacker may turn over the tags of up to <b>four "
@@ -281,22 +311,16 @@ def round_one() -> str:
                    "<p>The defender sees all 24 cards and their current tags. Count each rule’s errors on the "
                    "rule cards and announce the current winner. Looking, grouping and counting are free.</p>")
             + step(3, "audit", "Spend audit tokens",
-                   "<p>Up to <b>four</b>, one at a time. Name an unaudited card and pay a token. Open that card’s "
-                   "sealed slip and turn its tag to the trusted label, even if it was already right. Flip the "
-                   "token to <b>VERIFIED</b> and leave it on the card. Recount after every audit.</p>"))
+                   AUDIT_COPY[edition]))
     return page(7, body)
 
 
-def round_two() -> str:
+def round_two(edition: str = "seeded") -> str:
     body = (step(4, "lock", "Lock the learned rule",
                  "<p>When the defender stops or runs out of tokens, the rule with the fewest errors is locked, "
                  "using the tie order. Unused tokens give no bonus.</p>")
-            + step(5, "score", "Reveal and score",
-                   "<p>Turn the eight test cards over. For each, place the tag the locked rule predicts, then "
-                   "open the sealed deployment key. Score one point per correct prediction, out of eight.</p>")
-            + step(6, "switch", "Review and switch",
-                   "<p>Reveal the true rule, the flipped tags and the audits. Talk about what changed the "
-                   "learned rule. Then set out round two’s cards and switch attacker and defender.</p>")
+            + step(5, "score", "Reveal and score", SCORE_COPY[edition])
+            + step(6, "switch", "Review and switch", SWITCH_COPY[edition])
             + '<h2>The fine print</h2><ul>'
               "<li>A verified card cannot be audited again.</li>"
               "<li>An audit repairs only its own card. Identical-looking copies keep their tags until they are "
@@ -307,7 +331,7 @@ def round_two() -> str:
     return page(8, body)
 
 
-def winning() -> str:
+def winning(edition: str = "seeded") -> str:
     report = nest(score_card(), 0, 0, 150)
     body = ('<div class="kicker">After two rounds</div><h1>Winning</h1>'
             "<p>Compare the scores the two players earned as <b>defender</b>. The higher score wins; equal "
@@ -324,11 +348,12 @@ def winning() -> str:
     return page(9, body)
 
 
-def debrief() -> str:
+def debrief(edition: str = "seeded") -> str:
     qs = ("Which flipped tags changed the competition between rules, and why?",
           "Did finding a wrong tag immediately repair the score? What would one fewer audit have changed?",
           "Could an attacker flip a whole group of look-alike cards so no disagreement remains?",
-          "What makes the sealed slips trustworthy here? What changes if checks cost more or can be wrong?",
+          f"What makes the {'reference cards' if edition == 'fixed' else 'sealed slips'} trustworthy here? "
+          "What changes if checks cost more or can be wrong?",
           "What does this tiny rule library help explain, and what does it leave out about real ML systems?")
     body = ('<div class="kicker">Talk it over</div><h1>Debrief</h1>'
             "<p>The most interesting part of a match is often the reveal. Use these questions after both rounds:"
@@ -348,8 +373,8 @@ def debrief() -> str:
     return page(10, body)
 
 
-def reference() -> str:
-    aid = nest(aid_card(), 0, 0, 200)
+def reference(edition: str = "seeded") -> str:
+    aid = nest(aid_card(fixed.STEPS) if edition == "fixed" else aid_card(), 0, 0, 200)
     body = ('<div class="kicker">At a glance</div><h1>Quick reference</h1>'
             + fig(200, 280, aid, "Quick reference card", 1.1)
             + "<h2>Budgets in draft 0.1</h2>"
@@ -361,7 +386,7 @@ def reference() -> str:
     return page(11, body)
 
 
-def back_cover() -> str:
+def back_cover(edition: str = "seeded") -> str:
     scene = (f'<rect width="550" height="850" fill="url(#night)"/>{art.stars("backcover", 550, 850, 120)}'
              f'<g transform="translate(275 300)">{art.porthole(150, "bc")}</g>'
              f'<g transform="translate(95 560) scale(.56)">{art.logo(dark=True)}</g>')
@@ -369,6 +394,59 @@ def back_cover() -> str:
             'font-size:8.5pt">Draft 0.1 · rules and art are working hypotheses, not measured results.<br>'
             "Source, helper and printable kit: github.com/haydn-s/poisoned-dataset-game · Apache 2.0</div>")
     return page(12, body, bg(C["night"], scene), dark=True)
+
+
+def fixed_components() -> str:
+    mini = lambda svg: nest(svg, 0, 0, 92)
+    item = lambda w, h, svg, title, note: (f'<figure>{fig(w, h, svg, title)}<b>{escape(title)}</b>'
+                                           f'{escape(note)}</figure>')
+    hexes = (f'<g transform="translate(46 50)">{art.hexbolt("AUDIT", 40, 1)}</g>'
+             f'<g transform="translate(115 50)">{art.hexbolt("VERIFIED", 40)}</g>')
+    tags = (f'<g transform="translate(2 8)">{art.tag("STORE", 150, 50, "cpS")}</g>'
+            f'<g transform="translate(2 66)">{art.tag("RECYCLE", 150, 50, "cpR")}</g>')
+    items = [
+        item(92, 129, mini(cargo_card(Card("A07", 1, 1, 1), 0, chip=("DECK A", *fixed.DECK_TONE["A"]))),
+             "96 training cards", "four decks, A–D, of 24"),
+        item(92, 129, mini(back("test", subtitle="DEPLOYMENT")), "8 test cards", "one per cargo type, every round"),
+        item(92, 129, mini(fixed.truth_back()), "3 truth cards", "one drawn in secret each round"),
+        item(92, 129, mini(fixed.reference_back((1, 1, 1))), "16 reference cards",
+             "a STORE and a RECYCLE for each cargo type"),
+        item(92, 129, mini(rule_card(0, RULES[0])), "3 rule cards", "red, round, striped + tie order"),
+        item(160, 122, tags, "27 fold-over tags", "STORE one side, RECYCLE the other"),
+        item(160, 100, hexes, "4 audit tokens", "AUDIT side, then VERIFIED side"),
+        item(92, 129, mini(score_card()), "Score card", "plus 2 quick references"),
+        item(92, 129, mini(role_card("ATTACKER", fixed.ATTACKER)), "2 role cards", "attacker and defender"),
+    ]
+    body = ('<div class="kicker">In the box</div><h1>Components</h1>'
+            "<p>Everything is printed once and reused. During a round only two things are secret: which truth "
+            "card the attacker drew, and which tags they flipped.</p>"
+            f'<div class="grid">{"".join(items)}</div>'
+            '<p class="note">Keep the unused truth and reference cards face down in the box during a round.</p>')
+    return page(3, body)
+
+
+def fixed_setup() -> str:
+    row = "".join(nest(fixed.reference_back(p), 4 + k * 57, 4, 52) for k, p in enumerate(fixed.PROFILES))
+    body = ('<div class="kicker">Before each round</div><h1>Setup</h1>'
+            "<ol>"
+            "<li><b>Lay out a deck you have not used this match:</b> its 24 training cards face up in ID order. "
+            "Set the 8 test cards aside, and set out the rule cards and the score card.</li>"
+            "<li><b>The defender looks away.</b> The attacker shuffles the three truth cards face down, draws "
+            "one, reads it, and returns the other two to the box unseen.</li>"
+            "<li><b>Tag by the truth.</b> Hang a tag on every training card, STORE side up wherever the truth "
+            "card says STORE.</li>"
+            "<li><b>Lay the reference row.</b> For each of the eight cargo types, lay face down the reference "
+            "card whose label agrees with the truth. Return the other eight to the box unseen.</li>"
+            "<li><b>The attacker poisons</b> (step 1 of the round).</li>"
+            "<li><b>The defender returns</b> and takes four audit tokens, AUDIT side up.</li>"
+            "</ol>"
+            + fig(460, 80, row, "The face-down reference row: one card per cargo type")
+            + '<p class="note">Features and rules are public, and so are the decks. The secrets are the drawn '
+              "truth card and the flipped tags; the reference row is checked against the truth at the end.</p>"
+              "<h2>Playing on a screen instead</h2>"
+              "<p><code>python3 -m poisoned_dataset play</code> runs the same rules with freshly generated "
+              "decks and keeps the counts for you.</p>")
+    return page(6, body)
 
 
 PAGES = (cover, mission, components, anatomy, learner, setup, round_one, round_two, winning, debrief,
@@ -391,8 +469,8 @@ def document(title: str, body: str, page_size: str) -> str:
             f"<style>{style}</style></head><body>{art.defs()}{body}</body></html>\n")
 
 
-def build(out: Path) -> None:
-    pages = [make() for make in PAGES]
+def build(out: Path, edition: str = "seeded") -> None:
+    pages = [make(edition) for make in PAGES]
     (out / "rulebook.html").write_text(document("Poisoned Dataset rulebook", "".join(pages), "5.5in 8.5in"),
                                        encoding="utf-8")
     sheets = "".join(f'<div class="sheet">{pages[a - 1]}{pages[b - 1]}</div>' for a, b in imposition(len(pages)))

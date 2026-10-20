@@ -120,6 +120,8 @@ def main() -> None:
     components.add_argument("--regime", choices=REGIMES, default="correlated")
     components.add_argument("--out", type=Path, required=True, help="New output directory")
     components.add_argument("--cover-image", type=Path, help="Optional PNG/JPEG/WebP key art for the box lid")
+    components.add_argument("--edition", choices=("seeded", "fixed"), default="seeded",
+                            help="seeded: a two-round kit for one seed; fixed: the reusable printed edition")
     args = parser.parse_args()
     try:
         if args.command in ("demo", "play"):
@@ -159,11 +161,16 @@ def main() -> None:
             from . import box, components, rulebook
             if args.cover_image and not args.cover_image.is_file():
                 parser.error(f"Cover image not found: {args.cover_image}")
-            components.build(args.out, args.seed, args.regime)
-            rulebook.build(args.out)
-            box.build(args.out, args.cover_image)
-            print(f"Wrote public, private, backs, rulebook, rulebook-booklet and box HTML plus scenario.json "
-                  f"to {args.out}")
+            if args.edition == "fixed":
+                from . import edition
+                edition.build(args.out)
+                print(f"Wrote the fixed edition (cards, duplex, backs, rulebook, rulebook-booklet, box) to {args.out}")
+            else:
+                components.build(args.out, args.seed, args.regime)
+                print(f"Wrote public, private, backs, rulebook, rulebook-booklet and box HTML plus scenario.json "
+                      f"to {args.out}")
+            rulebook.build(args.out, args.edition)
+            box.build(args.out, args.cover_image, args.edition)
     except (ValueError, FileExistsError) as exc:
         parser.error(str(exc))
     except (EOFError, KeyboardInterrupt):
