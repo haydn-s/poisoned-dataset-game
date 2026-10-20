@@ -14,6 +14,8 @@ from . import __version__
 from .core import (ATTACKS, DEFENSES, REGIMES, accuracy, audit, errors, fit, flip_labels,
                    generate, poison, rng_for)
 
+PROTOCOL = "1.0"  # docs/evaluation-plan.md; bump and rerun the main seeds if any frozen parameter changes
+
 
 def write_csv(path: Path, rows: list[dict]) -> None:
     if not rows:
@@ -121,7 +123,7 @@ def run(out: Path, seeds: list[int], n: int, attack_budgets: list[int],
                             "ci95_low": lo, "ci95_high": hi,
                             "conflict_win_fraction": mean(v > 0 for v in values),
                             "tie_fraction": mean(v == 0 for v in values)})
-    metadata = {"prototype_version": __version__, "protocol": "draft-0.1",
+    metadata = {"prototype_version": __version__, "protocol": PROTOCOL,
                 "created_utc": datetime.now(timezone.utc).isoformat(),
                 "python": platform.python_version(), "git": git_state(),
                 "seeds": seeds, "n_train": n, "regimes": REGIMES, "attacks": ATTACKS,
