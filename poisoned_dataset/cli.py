@@ -112,6 +112,9 @@ def main() -> None:
     experiment.add_argument("--audit-budgets", type=budget_list, default=[0, 2, 4])
     experiment.add_argument("--bootstrap-resamples", type=int, default=1000)
     experiment.add_argument("--out", type=Path, required=True, help="New output directory")
+    report = sub.add_parser("report", help="Draw figures and headline numbers from experiment outputs")
+    report.add_argument("--results", type=Path, required=True, help="An experiment output directory")
+    report.add_argument("--out", type=Path, required=True, help="Directory for the figures and headline.json")
     components = sub.add_parser("components", help="Create the printable kit: cards, references, rulebook and box")
     components.add_argument("--seed", type=int, default=19)
     components.add_argument("--regime", choices=REGIMES, default="correlated")
@@ -140,6 +143,10 @@ def main() -> None:
                               "final_rule": fit(s.cards, result.labels),
                               "final_accuracy": accuracy(fit(s.cards, result.labels), s.true_rule),
                               "audit_trace": [asdict(x) for x in result.audits]}, indent=2))
+        elif args.command == "report":
+            from .report import build as report
+            numbers = report(args.results, args.out)
+            print(f"Wrote figures and headline.json to {args.out} (trace seed {numbers['trace_seed']})")
         elif args.command == "experiment":
             if args.seeds < 1:
                 parser.error("--seeds must be positive")

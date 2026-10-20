@@ -1,8 +1,8 @@
-# Poisoned Dataset evaluation plan draft
+# Poisoned Dataset evaluation plan
 
-Draft 0.1 · October 19, 2026 · Main evaluation target November 8, 2026
+Protocol v1.0 · frozen October 20, 2026, before the main run · drafted October 19 as draft 0.1
 
-The evaluation asks **when a fixed budget of conflict-based label audits protects this game's classifier better than uniform random audits**. Paired simulations provide the main evidence. Small walkthroughs and optional playtests examine whether people can use the resulting game. All parameters below are provisional until the pilot review and protocol freeze.
+The evaluation asks **when a fixed budget of conflict-based label audits protects this game's classifier better than uniform random audits**. Paired simulations provide the main evidence. Small walkthroughs and optional playtests examine whether people can use the resulting game. Version 1.0 freezes every parameter below, unchanged from draft 0.1; see the [freeze record](#freeze-record-v10).
 
 ## Threat model
 
@@ -62,7 +62,7 @@ Choose the largest pair; break ties uniformly using the defense's seed. If all s
 
 Simulated defenders spend the entire assigned budget for a fair cost comparison. Human players may stop early, and their choices need not match either automated policy. Simulation findings describe the specified policies, not optimal human strategy or measured player performance.
 
-## Provisional experiment matrix
+## Experiment matrix
 
 | Factor | Values |
 | --- | --- |
@@ -104,7 +104,7 @@ From the repository root, using a clean committed implementation:
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 -m poisoned_dataset experiment --seed-start 1000 --seeds 200 --bootstrap-resamples 2000 --out artifacts/evaluation-v01
+python3 -m poisoned_dataset experiment --seed-start 1000 --seeds 200 --bootstrap-resamples 2000 --out results/evaluation-v1.0
 ```
 
 The runner refuses to overwrite existing directories. Outputs are:
@@ -118,7 +118,16 @@ The runner refuses to overwrite existing directories. Outputs are:
 | summary.csv | Means and final-accuracy standard deviations by condition and defense |
 | comparisons.csv | Mean paired differences, bootstrap intervals, win fractions, and tie fractions |
 
-Archive a clean protocol/code revision and these outputs for the final release. Scratch outputs are ignored by Git; intentionally preserve selected results and their reproduction command when assembling the portfolio. The automatic demo uses separate random streams and is illustrative, not a main-grid result.
+Archive a clean protocol/code revision and these outputs for the final release. The v1.0 main-run outputs are committed under `results/evaluation-v1.0/`; a rerun needs a new output directory. Scratch outputs under `artifacts/` are ignored by Git. The automatic demo uses separate random streams and is illustrative, not a main-grid result.
+
+## Freeze record v1.0
+
+Frozen on October 20, 2026, in the commit that introduces this section, before any main seed was generated. Seeds 1000–1199 had not been run or inspected; development used seeds 0–49 only.
+
+- **Frozen without change from draft 0.1:** the threat model, data generation, learner and tie order, attack and defense policies, the experiment matrix, the primary contrast (correlated training, directed poisoning, k = 4, a = 4), the metrics, and the 2,000-resample percentile bootstrap.
+- **Runner:** `experiments.PROTOCOL = "1.0"` is recorded in `metadata.json`, together with the commit and a dirty flag. The main run must come from a clean checkout of this commit or a later commit that changes only documentation or analysis code.
+- **Pre-freeze checks:** the test suite covers the manual error-count example, tie handling, maximum attack budgets, identical poisoned inputs across defenses, exact oracle-call budgets, distinct audit selections, deterministic reruns, scoring and training separation, zero-attack and zero-audit controls, and the handcrafted consistent-poison and minority-correct cases.
+- **Timing:** this freeze comes before the planned playtests, earlier than the November 1 date in the roadmap. If playtests change any frozen parameter, the change becomes protocol v1.1 with a stated reason. All main seeds are then rerun, and the v1.0 results are kept and reported next to v1.1, rather than presented as untouched evaluation data for v1.1.
 
 ## Verification and failure analysis
 
