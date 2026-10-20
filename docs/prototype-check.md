@@ -30,4 +30,4 @@ Choose another new output directory if that one already exists. The first develo
 
 ## Checks still needed
 
-The printable kit's public/secret separation and component counts passed structural checks. Label tokens are specified as 2 × 0.3 inches to fit the card slots. Rendered print layout and physical assembly still need a check: automated browser preview was unavailable for local files. No human playtest or timing study has been completed. Next, print a kit, perform a timed walkthrough, and review the coarse 4/8 versus 8/8 scoring before freezing the mechanics.
+The printable kit's public/secret separation and component counts passed structural checks. Label tags are 1.6 × 0.55 inch fold-overs (STORE on one side, RECYCLE on the other) that fit the 1.6 × 0.55 inch slot on each poker-size card. Every print file was rendered to PDF in headless Chromium at 100% and inspected; physical assembly, folding, and cutting still need a check. No human playtest or timing study has been completed. Next, print a kit, perform a timed walkthrough, and review the coarse 4/8 versus 8/8 scoring before freezing the mechanics.

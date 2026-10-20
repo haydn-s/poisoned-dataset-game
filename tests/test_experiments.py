@@ -66,7 +66,9 @@ class ExperimentTests(unittest.TestCase):
             private = (out / "private.html").read_text()
             self.assertNotIn("True rule:", public)
             self.assertIn("True rule:", private)
-            self.assertEqual(public.count('<div class="card">'), 120)
+            counts = {kind: public.count(f'data-kind="{kind}"') for kind in
+                      ("training", "test", "rule", "score", "aid", "role")}
+            self.assertEqual(counts, {"training": 48, "test": 16, "rule": 3, "score": 1, "aid": 2, "role": 2})
             scenarios = json.loads((out / "scenario.json").read_text())
             self.assertEqual([s["seed"] for s in scenarios], [19, 20])
             self.assertEqual([len(s["cards"]) for s in scenarios], [24, 24])

@@ -1,0 +1,356 @@
+[
+  {
+    "seed": 42,
+    "regime": "correlated",
+    "true_rule": "striped",
+    "cards": [
+      {
+        "id": "C01",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C02",
+        "red": 0,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C03",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C04",
+        "red": 1,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C05",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C06",
+        "red": 1,
+        "round": 0,
+        "striped": 1
+      },
+      {
+        "id": "C07",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C08",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C09",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C10",
+        "red": 1,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C11",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C12",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C13",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C14",
+        "red": 0,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C15",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C16",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C17",
+        "red": 0,
+        "round": 0,
+        "striped": 1
+      },
+      {
+        "id": "C18",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C19",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C20",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C21",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C22",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C23",
+        "red": 1,
+        "round": 0,
+        "striped": 1
+      },
+      {
+        "id": "C24",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      }
+    ],
+    "clean_labels": [
+      1,
+      0,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "seed": 43,
+    "regime": "correlated",
+    "true_rule": "round",
+    "cards": [
+      {
+        "id": "C01",
+        "red": 0,
+        "round": 0,
+        "striped": 1
+      },
+      {
+        "id": "C02",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C03",
+        "red": 0,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C04",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C05",
+        "red": 0,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C06",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C07",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C08",
+        "red": 0,
+        "round": 0,
+        "striped": 1
+      },
+      {
+        "id": "C09",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C10",
+        "red": 0,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C11",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C12",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C13",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C14",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C15",
+        "red": 0,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C16",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C17",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C18",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C19",
+        "red": 0,
+        "round": 0,
+        "striped": 1
+      },
+      {
+        "id": "C20",
+        "red": 0,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C21",
+        "red": 1,
+        "round": 1,
+        "striped": 0
+      },
+      {
+        "id": "C22",
+        "red": 1,
+        "round": 1,
+        "striped": 1
+      },
+      {
+        "id": "C23",
+        "red": 0,
+        "round": 0,
+        "striped": 0
+      },
+      {
+        "id": "C24",
+        "red": 1,
+        "round": 0,
+        "striped": 1
+      }
+    ],
+    "clean_labels": [
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1,
+      1,
+      0,
+      0
+    ]
+  }
+]
