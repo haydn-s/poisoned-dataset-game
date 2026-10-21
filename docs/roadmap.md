@@ -1,35 +1,48 @@
-# Poisoned Dataset delivery roadmap draft
+# Poisoned Dataset delivery roadmap
 
-Draft 0.1 · October 19, 2026
+Draft 0.1 · October 19, 2026 · updated October 20
 
-Protect the November 8 evaluation target and November 13 printer submission by keeping the core project small. Budget **9 hours of essential work per week**, with up to **6 additional hours** for improvements when available. The primary outcome is a playable artifact with reproducible evaluation, clear limitations, and a polished explanation.
+The main evaluation finished early: protocol v1.0 was frozen and seeds 1000–1199 were run on October 20. The remaining milestones are the **November 13** poster submission and the **November 23** final deliverables, including one professionally made copy. Budget **9 hours of essential work per week**, with up to **6 additional hours** for improvements when available. The primary outcome is a playable artifact with reproducible evaluation, clear limitations, and a polished explanation.
 
-## Work through the main evaluation
+## Status on October 20
 
-| Dates in 2026 | Essential work within 9 hours | Optional work up to 6 hours | Exit condition |
+| Workstream | Status | Record |
+| --- | --- | --- |
+| Main evaluation | Done. Protocol v1.0 was frozen before playtests, then seeds 1000–1199 were run. A change to any frozen parameter becomes v1.1 with a full rerun, reported alongside v1.0. | [Evaluation results](evaluation-results.md) |
+| Artwork and components | First full pass done: cards, tags, tokens, backs, and private references for the seeded kit | [Art direction](art-direction.md), `print/kit-seed-42/` |
+| Printed rulebook | 12-page half-letter booklet in both editions, in reading order and imposed | `print/*/rulebook*.pdf` |
+| Box and storage | Mockup dielines, cover art, and packing plan for both editions | `print/*/box.pdf` |
+| Printed-copy design | Decided: the fixed-deck edition, with no per-game printing | [Fixed-deck edition](fixed-deck-edition.md), `print/fixed-edition/` |
+| Print vendor | Not chosen; no templates, quote, or delivery date yet | — |
+| Playtests | None yet; no solo walkthrough of the printed set | [Playtest record](playtest-record.md) |
+| Poster | Not started | — |
+
+## Revised schedule
+
+| Dates in 2026 | Essential work | Optional work | Exit condition |
 | --- | --- | --- | --- |
-| October 19–25 | 2h review drafts; 3h solo/manual walkthroughs; 2h inspect pilot simulations; 2h revise budgets and rules | Improve printable layout; recruit a few playtesters | One complete match walkthrough; mechanics and bookkeeping problems logged |
-| October 26–November 1 | 3h formative sessions or additional walkthroughs; 3h revise game and rerun pilot; 3h freeze protocol and confirm reproducibility | Better physical components or one bounded sensitivity check | Versioned rules, threat model, primary contrast, code, and seed list frozen |
-| November 2–8 | 2h run and verify main evaluation; 3h analyze paired results and failure cases; 2h produce figures; 2h write findings and limitations | Extra participant feedback or prespecified sensitivity run | Main evaluation complete November 8; raw outputs and figures archived |
+| October 20–25 | Choose a vendor and request templates, a quote, and turnaround; print and assemble a home proof of the fixed edition; time a solo walkthrough | Recruit playtesters; start the poster draft | Vendor shortlisted with dates; proof problems logged |
+| October 26–November 1 | Run two to four formative matches; revise rules and components from what they show | One bounded sensitivity check | Rules for the printed copy settled; any frozen-parameter change versioned as protocol v1.1 |
+| November 2–8 | Approve the vendor proof and order the copy; revise the poster draft | Exploratory analyses, such as a defense-aware attacker | Copy ordered with a confirmed delivery date |
 
-The first three weeks provide approximately **27–45 hours before evaluation completion**. The small rule learner, synthetic data, and automatic runner fit this window better than a full video game. Keep development and main seeds separate while making revisions.
+Finishing the evaluation early freed most of the November 2–8 block, about nine essential hours. Spend it on the vendor, the playtests, and an earlier poster. Keep development and main seeds separate: tune only on seeds 0–49.
 
 ## Physical prototype after the initial draft
 
-The intended deliverable includes **one professionally made physical copy**. The next phase after merging the initial draft is a prototype of the artwork, a printed rulebook, and a box. Develop these together with the playtest revisions so the physical game is ready for production planning before the final release week.
+The intended deliverable includes **one professionally made physical copy**. The first prototype of each workstream now exists; what remains are the checks before production.
 
-| Workstream | Next prototype | Check before professional production |
+| Workstream | Prototype now | Check before professional production |
 | --- | --- | --- |
-| Artwork and components | A consistent moon-colony visual direction; sample card fronts and backs, labels, audit tokens, and rule cards | Legible at actual size, features distinguishable without color alone, and no secret information exposed by backs or layout |
-| Printed rulebook | A compact booklet with setup, an illustrated round, tie order, scoring, and a quick reference | New players can complete a match; pages fit the proposed box and remain readable when printed |
-| Box and storage | A paper mockup of the box, cover layout, and a packing plan for all components | Fit the complete physical set, including movable labels and folded audit slips or envelopes, before choosing final dimensions |
-| Production preparation | Component inventory, editable source files, and vendor-specific print exports | Confirm the supplier's templates, bleed and safe areas, materials, price, proof process, and production plus shipping schedule against the November 23 deadline |
+| Artwork and components | Moon-colony art on every card, fold-over tags, hex audit tokens, and the fixed-deck edition's truth and reference cards | Legible at actual size, features distinguishable without color alone, no secret information exposed by backs or show-through |
+| Printed rulebook | 12-page booklet with setup, an illustrated round, tie order, scoring, and a quick reference | New players can complete a match; pages remain readable when printed |
+| Box and storage | Telescoping box dielines, cover art, and packing plans | The complete printed set fits, with tags and tokens, before final dimensions are chosen |
+| Production preparation | Component inventory and editable SVG source in code | Vendor templates, bleed and safe areas, materials, price, proof process, and production plus shipping against November 23; then per-card exports in the vendor's format |
 
-Confirm supplier requirements and timing early, then test a home-printed physical proof before committing to professional production. Reserve time for one proof revision. Ordering the finished copy is a separate step after the specifications, quote, and delivery date are settled. Keep the November 8 evaluation and November 13 poster submission milestones protected while planning this work.
+Confirm supplier requirements and timing early, then test a home-printed physical proof before committing to professional production. Reserve time for one proof revision. Ordering the finished copy is a separate step after the specifications, quote, and delivery date are settled. Keep the November 13 poster submission protected while planning this work.
 
 ## Poster and final release
 
-**November 9–12:** reserve the poster production block for approximately 8–12 hours of layout, concise findings, figure integration, citations, proofreading, and export checks. Choose a poster at least **24 × 24 inches** and confirm the printer's required dimensions and file settings before final layout. Include the research question, game loop, threat model, actual results, failure case, and limitations. Use a legible link or QR code to the playable artifact and reproducibility materials.
+**November 9–12:** reserve the poster block for approximately 8–12 hours of final layout, proofreading, and export checks, working from a draft started earlier now that results exist. The draft is 36 × 24 inches; confirm the printer's required dimensions and file settings before final layout. Include the research question, game loop, threat model, actual results, failure case, and limitations. Use a legible link or QR code to the playable artifact and reproducibility materials.
 
 **November 13:** submit the final poster PDF to the printer. This is the printing deadline, not the start of layout. Keep the submitted PDF and a receipt or confirmation with the release materials.
 
@@ -48,7 +61,7 @@ Confirm supplier requirements and timing early, then test a home-printed physica
 
 ## Scope control and contingencies
 
-If the first walkthrough is slow, simplify physical bookkeeping and retain the terminal helper. If meaningful choices are rare, change a budget or the deck distribution in the development phase before adding a new mechanic. If scores tie too often, test a single rule-library or scoring change and record it as a new protocol version. Freeze changes before the main seed range is evaluated.
+If the first walkthrough is slow, simplify physical bookkeeping and retain the terminal helper. If meaningful choices are rare, change a budget or the deck distribution; that changes frozen parameters, so record it as protocol v1.1 and rerun the main seeds. If matches tie too often, prefer a tiebreaker in the match rules: it decides who wins, not any round's accuracy, so it leaves the frozen evaluation untouched. A change to the rule library or deployment scoring would need v1.1.
 
 If participants are unavailable, complete the synthetic experiments, diagnostic cases, and solo walkthroughs; describe the usability gap honestly. If conflict auditing does not outperform random auditing, explain the conditions and failure mechanism instead of changing the question to find a positive result. If optional work competes with the poster window, remove optional work.
 

@@ -13,6 +13,8 @@ This document records the original visual review and the selected direction now 
 
 Original PNGs and exact generation records are in [`assets/art/`](../assets/art/README.md). The printed rules, component sizes, four fixed decks, budgets and frozen evaluation are unchanged by this pass.
 
+The merge update retains main's match tiebreakers in the score card and rulebook, then rebuilds both print editions. The poster also embeds the painted cover and characters; its figures and evaluation results are preserved.
+
 ## Review of the committed art
 
 At the initial review after [PR #1](https://github.com/haydn-s/poisoned-dataset-game/pull/1), the repository had no committed image files. Its visual material was the HTML kit that `components.py` generated. Rendering it at 100% showed a usable layout with no visual identity:

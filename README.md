@@ -75,12 +75,14 @@ Every output includes raw results, paired defense comparisons, summary statistic
 - [Prototype rules](docs/prototype-rules.md): two-player setup, turn sequence, scoring, and debrief.
 - [Evaluation plan](docs/evaluation-plan.md): threat model, exact policies, metrics, uncertainty, and limitations.
 - [Main evaluation results](docs/evaluation-results.md): protocol v1.0 run on seeds 1000–1199, primary contrast, figures, and a failure case.
+- [Poster](presentation/README.md): the 36 × 24 in showcase poster, generated from the committed results.
 - [Delivery roadmap](docs/roadmap.md): work within 9–15 hours per week and the November deadlines.
 - [Shareable playtest guide](playtest.md): player instructions and a short feedback form to send to volunteers.
 - [Playtest record](docs/playtest-record.md): an observation sheet for small formative sessions or solo walkthroughs.
 - [Initial prototype checks](docs/prototype-check.md): automated validation, development diagnostics, and outstanding physical checks.
 - [Art direction](docs/art-direction.md): review of the earlier kit, the key-art brief, the visual system, and production notes.
 - [Fixed-deck edition](docs/fixed-deck-edition.md): the reusable printed set, its rules changes, and the deck selection.
+- [Match tiebreakers](docs/match-tiebreakers.md): how tied matches are decided, and simulated draw rates.
 
 The learner selects the feature rule with the fewest training-label errors, breaking ties in the order **red, round, striped**. Defense policies cannot see the secret true rule or test labels. The deployment deck enumerates all eight feature combinations, so scores are exact for a uniform toy deployment distribution. Repeated feature combinations in training and testing are distinct records in this finite feature space.
 
@@ -94,6 +96,7 @@ poisoned_dataset/cli.py          Shared-terminal match and command-line interfac
 poisoned_dataset/components.py   Printable cards, tokens and private references
 poisoned_dataset/decks.py        Fixed decks for the printed edition, chosen from development seeds
 poisoned_dataset/edition.py      The fixed-deck edition: truth cards, reference cards, print sheets
+poisoned_dataset/match.py        Match winner and tiebreakers, with simulated draw rates
 poisoned_dataset/art.py          SVG game symbols and shared painted artwork
 assets/art/                     Painted originals, concept references and exact prompts
 tools/render_print.py           Optional Chrome/Chromium PDF exporter
@@ -102,6 +105,7 @@ poisoned_dataset/box.py          Box dielines, cover layout and packing plan
 poisoned_dataset/experiments.py  Paired simulation and result export
 poisoned_dataset/report.py       Figures and headline numbers from experiment outputs
 docs/                           Versioned design and evaluation drafts
+presentation/                   Poster generator, generated poster, figures and PDF
 tests/                          Mechanics and experiment-integrity checks
 ```
 

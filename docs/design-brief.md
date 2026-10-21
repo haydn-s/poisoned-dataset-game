@@ -6,7 +6,7 @@ Poisoned Dataset is a playable demonstration of how changing training labels can
 
 ## Project commitments and working choices
 
-The selected concept is a defender training a classifier while an attacker secretly poisons its training data. Final deliverables are due **November 23, 2026**. The poster must reach the printer **November 13**, with the main evaluation targeted for completion **November 8** and **November 9–12** reserved for poster preparation. Available effort is approximately **9–15 hours per week**.
+The selected concept is a defender training a classifier while an attacker secretly poisons its training data. Final deliverables are due **November 23, 2026**. The poster must reach the printer **November 13**, with **November 9–12** reserved for final poster preparation. The main evaluation, originally targeted for November 8, was completed on October 20 under frozen protocol v1.0. Available effort is approximately **9–15 hours per week**.
 
 | Working choice | First implementation | Reason to reconsider |
 | --- | --- | --- |
@@ -44,7 +44,7 @@ The project should claim a playable, evaluated explanation of this simplified at
 | Four label flips rarely change the rule | Rule-switch rate and clean/poisoned accuracy across seeds | Adjust flip budget or training correlation |
 | Attacks almost always succeed despite four audits | Final accuracy and recovery by defense | Tune audit budget before adding defenses |
 | Conflict targeting misses consistent poisoned groups | Prespecified failure case and raw audit traces | Explain the limitation; consider a second targeting signal later |
-| Match scoring produces frequent draws | Counts from walkthroughs and small playtests | Consider a fourth, explicitly specified rule or revised scoring |
+| Match scoring produces frequent draws | Counts from walkthroughs and small playtests | Tiebreakers adopted for testing: more poison found, then fewer tokens spent ([match tiebreakers](match-tiebreakers.md)); a fourth rule would need protocol v1.1 |
 | Repeated bookkeeping consumes the session | Time per audit, counting errors, facilitator interventions | Keep counts in the helper and simplify physical setup |
 | One role feels predetermined | Each player's meaningful decisions and reasons | Tune parameters and scenario selection, documenting changes |
 
