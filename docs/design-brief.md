@@ -6,7 +6,7 @@ Poisoned Dataset is a playable demonstration of how changing training labels can
 
 ## Project commitments and working choices
 
-The selected concept is a defender training a classifier while an attacker secretly poisons its training data. Final deliverables are due **November 23, 2026**. The poster must reach the printer **November 13**, with the main evaluation targeted for completion **November 8** and **November 9–12** reserved for poster preparation. Available effort is approximately **9–15 hours per week**.
+The selected concept is a defender training a classifier while an attacker secretly poisons its training data. Final deliverables are due **November 23, 2026**. The poster must reach the printer **November 13**, with **November 9–12** reserved for final poster preparation. The main evaluation, originally targeted for November 8, was completed on October 20 under frozen protocol v1.0. Available effort is approximately **9–15 hours per week**.
 
 | Working choice | First implementation | Reason to reconsider |
 | --- | --- | --- |
