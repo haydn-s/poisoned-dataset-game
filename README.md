@@ -71,6 +71,7 @@ Every output includes raw results, paired defense comparisons, summary statistic
 - [Initial prototype checks](docs/prototype-check.md): automated validation, development diagnostics, and outstanding physical checks.
 - [Art direction](docs/art-direction.md): review of the earlier kit, the key-art brief, the visual system, and production notes.
 - [Fixed-deck edition](docs/fixed-deck-edition.md): the reusable printed set, its rules changes, and the deck selection.
+- [Match tiebreakers](docs/match-tiebreakers.md): how tied matches are decided, and simulated draw rates.
 
 The learner selects the feature rule with the fewest training-label errors, breaking ties in the order **red, round, striped**. Defense policies cannot see the secret true rule or test labels. The deployment deck enumerates all eight feature combinations, so scores are exact for a uniform toy deployment distribution. Repeated feature combinations in training and testing are distinct records in this finite feature space.
 
@@ -84,6 +85,7 @@ poisoned_dataset/cli.py          Shared-terminal match and command-line interfac
 poisoned_dataset/components.py   Printable cards, tokens and private references
 poisoned_dataset/decks.py        Fixed decks for the printed edition, chosen from development seeds
 poisoned_dataset/edition.py      The fixed-deck edition: truth cards, reference cards, print sheets
+poisoned_dataset/match.py        Match winner and tiebreakers, with simulated draw rates
 poisoned_dataset/art.py          Procedural, seeded SVG artwork shared by all print pieces
 poisoned_dataset/rulebook.py     Illustrated 12-page rulebook and booklet imposition
 poisoned_dataset/box.py          Box dielines, cover layout and packing plan

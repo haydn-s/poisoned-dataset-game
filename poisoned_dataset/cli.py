@@ -8,6 +8,7 @@ from secrets import randbits
 
 from .core import (LABELS, REGIMES, RULES, accuracy, conflict_scores, errors, fit,
                    flip_labels, generate, poison, predict, rng_for, test_deck)
+from .match import Defence, winner
 
 
 def budget_list(value: str) -> list[int]:
@@ -43,7 +44,7 @@ def play(seed: int, regime: str, attack_budget: int, audit_budget: int) -> None:
     print("POISONED DATASET — draft 0.1. Two rounds; each player defends once.")
     print("Use player names A and B. Ask the other player to look away at handoffs.")
     print("The helper relies on honest play and is not a secure secret-keeping system.")
-    scores = []
+    defences = []
     for round_number, defender in enumerate(("A", "B")):
         scenario = generate(seed + round_number, 24, regime)
         input(f"\nRound {round_number + 1}: defender {defender} looks away; attacker presses Enter. ")
@@ -82,12 +83,17 @@ def play(seed: int, regime: str, attack_budget: int, audit_budget: int) -> None:
             print(card.id, card.describe(), "predicted", LABELS[predict(rule, card)],
                   "reference", LABELS[predict(scenario.true_rule, card)])
         points = round(8 * accuracy(rule, scenario.true_rule))
-        scores.append(points)
+        found = sum(before != after for _, before, after in history)
+        defences.append(Defence(points, found, len(history)))
         print(f"Defender {defender}: {points}/8. True rule: {scenario.true_rule}.")
         print("Flipped cards:", [scenario.cards[i].id for i in flips], "Audits:", history)
         print("Discuss: why did this rule win, and which audit changed the evidence?")
-    print(f"\nFinal defender scores: A {scores[0]}/8; B {scores[1]}/8.")
-    print("Draw." if scores[0] == scores[1] else f"Player {'A' if scores[0] > scores[1] else 'B'} wins.")
+    a, b = defences
+    print(f"\nFinal defender scores: A {a.points}/8; B {b.points}/8.")
+    if a.points == b.points:
+        print(f"Tied on score. Poison found: A {a.found}, B {b.found}. Tokens spent: A {a.spent}, B {b.spent}.")
+    result = winner(a, b)
+    print("Draw." if result is None else f"Player {result} wins.")
     print("Match seed for your playtest record:", seed)
 
 

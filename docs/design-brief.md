@@ -44,7 +44,7 @@ The project should claim a playable, evaluated explanation of this simplified at
 | Four label flips rarely change the rule | Rule-switch rate and clean/poisoned accuracy across seeds | Adjust flip budget or training correlation |
 | Attacks almost always succeed despite four audits | Final accuracy and recovery by defense | Tune audit budget before adding defenses |
 | Conflict targeting misses consistent poisoned groups | Prespecified failure case and raw audit traces | Explain the limitation; consider a second targeting signal later |
-| Match scoring produces frequent draws | Counts from walkthroughs and small playtests | Consider a fourth, explicitly specified rule or revised scoring |
+| Match scoring produces frequent draws | Counts from walkthroughs and small playtests | Tiebreakers adopted for testing: more poison found, then fewer tokens spent ([match tiebreakers](match-tiebreakers.md)); a fourth rule would need protocol v1.1 |
 | Repeated bookkeeping consumes the session | Time per audit, counting errors, facilitator interventions | Keep counts in the helper and simplify physical setup |
 | One role feels predetermined | Each player's meaningful decisions and reasons | Tune parameters and scenario selection, documenting changes |
 
