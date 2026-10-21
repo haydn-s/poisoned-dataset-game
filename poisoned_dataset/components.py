@@ -65,7 +65,7 @@ def card(kind: str, label: str, body: str, frame: bool = True) -> str:
     edge = (f'<path d="{rrect(9, 9, 232, 332, 12)[0]}" fill="none" stroke="{INK}" stroke-width="2"/>'
             if frame else "")
     return (f'<svg class="card" data-kind="{kind}" viewBox="0 0 250 350" role="img" aria-label="{escape(label)}">'
-            f'<rect width="250" height="350" fill="{C["paper"]}"/>{art.grain(art.box(250, 350), "card", .35)}'
+            f'<rect width="250" height="350" fill="{C["paper"]}"/>'
             f'{body}{edge}</svg>')
 
 
@@ -185,7 +185,7 @@ def rule_card(i: int, rule: str) -> str:
 def score_card() -> str:
     boxes = lambda y: "".join(f'<rect x="{f(22 + k * 23)}" y="{y}" width="19" height="19" rx="3" fill="{C["paper"]}" '
                               f'stroke="{INK}" stroke-width="1.3"/>' for k in range(8))
-    body = (f'<g transform="translate(150 22) scale(.42)">{art.sorter("score", reach=False)}</g>'
+    body = (f'<g transform="translate(150 22) scale(.42)">{art.sorter("score")}</g>'
             + text(22, 48, "DEPLOYMENT", 17, INK, 900, "start") + text(22, 68, "REPORT", 17, INK, 900, "start")
             + text(22, 120, "ROUND 1 · DEFENDER A", 9, INK, 800, "start", spacing=1) + boxes(128)
             + text(226, 143, "/ 8", 11, INK, 800, "end")
@@ -219,9 +219,9 @@ def aid_card(steps: tuple[str, ...] = STEPS) -> str:
 
 def role_card(role: str, blurb: str | None = None) -> str:
     attacker = role == "ATTACKER"
-    figure = (f'<g transform="translate(46 70) scale(.58)">{art.mallory("role")}</g>' if attacker else
-              f'<g transform="translate(40 92) scale(.84)">{art.sorter("role")}</g>'
-              f'<g transform="translate(192 120)">{art.hexbolt("VERIFIED", 26)}</g>')
+    figure = (f'<g transform="translate(46 42) scale(.58)">{art.mallory("role")}</g>' if attacker else
+              f'<g transform="translate(40 48) scale(.84)">{art.sorter("role")}</g>'
+              f'<g transform="translate(192 86)">{art.hexbolt("VERIFIED", 26)}</g>')
     blurb = blurb or ("You know the true rule and the clean labels. Before the defender looks, flip up to four tags."
                       if attacker else
                       "Inspect the tags, spend up to four audits, then lock the rule your sorter learns.")

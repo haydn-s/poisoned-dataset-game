@@ -75,7 +75,7 @@ SWITCH_COPY = {
 
 def bg(fill: str = C["paper"], scene: str = "") -> str:
     return (f'<svg class="bg" viewBox="0 0 550 850" aria-hidden="true"><rect width="550" height="850" fill="{fill}"/>'
-            f'{scene}{art.grain(art.box(550, 850), "page", .32)}</svg>')
+            f'{scene}</svg>')
 
 
 def fig(w: float, h: float, body: str, label: str, scale: float = 1) -> str:
@@ -111,9 +111,8 @@ def cover(edition: str = "seeded") -> str:
 
 
 def mission(edition: str = "seeded") -> str:
-    held = f'<g transform="translate(176 80) rotate(84)">{art.tag("", 54, 22, "bk", blank=True)}</g>'
-    duo = (f'<g transform="translate(0 6) scale(.6)">{art.mallory("book")}</g>'
-           f'<g transform="translate(230 70) scale(.78)">{art.sorter("book", holding=held)}</g>')
+    duo = (f'<g transform="translate(38 28) scale(.62)">{art.mallory("book")}</g>'
+           f'<g transform="translate(254 50) scale(.94)">{art.sorter("book")}</g>')
     body = (
         '<div class="kicker">The story</div><h1>Your mission</h1>'
         "<p>You work for rival companies on a moon colony. The <b>defender</b> trains a supply-sorting robot to "
@@ -122,9 +121,8 @@ def mission(edition: str = "seeded") -> str:
         "<p>Play two rounds and switch roles after the first, so each player defends once. The better defender "
         "wins.</p>"
         + fig(460, 230, f'<rect width="460" height="230" rx="10" fill="url(#shop)"/>{duo}'
-                        f'{art.grain(art.box(460, 230), "duo", .8)}'
                         f'<rect width="460" height="230" rx="10" fill="none" stroke="{INK}" stroke-width="2"/>',
-              "Mallory, the rival robot, eyes the sorter as it tags a crate")
+              "Mallory holds two labels; the diligent mustard Sorter carries an inspection glass")
         + "<h2>What the game is about</h2>"
         "<p>Machine-learning systems learn from labelled examples. If someone can change the labels, the system "
         "can learn a rule that looks right on its training data and fails in use. Checking every label is "
@@ -290,7 +288,7 @@ def vignette(kind: str) -> str:
                   + f'<g transform="translate(78 30) scale(.27)">{art.tag("STORE", 160, 55, "v5")}</g>'
                   + f'<g transform="translate(86 56)">{art.icon("check", C["teal"], 26)}</g>'),
         "switch": (f'<g transform="translate(-4 20) scale(.26)">{art.mallory("v6")}</g>'
-                   f'<g transform="translate(66 34) scale(.3)">{art.sorter("v6", reach=False)}</g>'
+                   f'<g transform="translate(66 34) scale(.3)">{art.sorter("v6")}</g>'
                    f'<path d="M48 18q14-12 28 0M76 86q-14 12-28 0" fill="none" stroke="{C["paper"]}" stroke-width="2.6"/>'),
     }[kind]
     return fig(w, h, shop + draw + art.grain(art.box(w, h), "vig" + kind, .7) + edge, kind)
@@ -466,7 +464,7 @@ def imposition(n: int) -> list[tuple[int, int]]:
 def document(title: str, body: str, page_size: str) -> str:
     style = STYLE.replace("size: 5.5in 8.5in", f"size: {page_size}")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{escape(title)}</title>'
-            f"<style>{style}</style></head><body>{art.defs()}{body}</body></html>\n")
+            f"<style>{style}</style></head><body>{art.defs(include_cover=True)}{body}</body></html>\n")
 
 
 def build(out: Path, edition: str = "seeded") -> None:
