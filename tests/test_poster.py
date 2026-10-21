@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import re
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -40,6 +41,13 @@ class PosterTests(unittest.TestCase):
 
     def test_size_is_a_parameter(self):
         self.assertIn("size: 48in 36in", self.poster.build(48, 36))
+
+    def test_all_reused_svg_art_has_a_definition(self):
+        html = self.poster.build()
+        ids = set(re.findall(r'\bid="([^"]+)"', html))
+        references = set(re.findall(r'<use\b[^>]*\bhref="#([^"]+)"', html))
+        self.assertTrue(references)
+        self.assertFalse(references - ids, f"Missing SVG definitions: {references - ids}")
 
 
 if __name__ == "__main__":

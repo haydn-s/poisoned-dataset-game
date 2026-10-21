@@ -203,7 +203,7 @@ def figures() -> dict[str, str]:
 
 def loop_strip() -> str:
     steps = [
-        ("Poison: flip up to 4 tags", svg("0 0 250 350", f'<g transform="translate(10 20) scale(.8)">{art.mallory("pp")}</g>', "Mallory")),
+        ("Poison: flip up to 4 tags", svg("0 0 250 350", f'<g transform="translate(44 70) scale(.78)">{art.mallory("pp")}</g>', "Mallory")),
         ("Inspect: count errors", card_svg(cargo_card(Card("C07", 1, 1, 1), 1))),
         ("Audit: up to 4 tokens", svg("0 0 250 350", f'<g transform="translate(125 115)">{art.hexbolt("AUDIT", 85, 1)}</g>'
                                      f'<g transform="translate(125 270)">{art.hexbolt("VERIFIED", 70)}</g>',
@@ -341,7 +341,7 @@ def build(width: float = 36, height: float = 24) -> str:
             f"repository</span></footer></div>")
     style = STYLE.replace("WIDTH", f"{width:g}").replace("HEIGHT", f"{height:g}")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Poisoned Dataset poster</title>'
-            f"<style>{style}</style></head><body>{art.defs()}{body}</body></html>\n")
+            f"<style>{style}</style></head><body>{art.defs(include_cover=True)}{body}</body></html>\n")
 
 
 def main() -> None:

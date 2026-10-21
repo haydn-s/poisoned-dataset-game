@@ -37,9 +37,19 @@ Open the files in a browser and print at 100% (actual size):
 
 Cards are poker size (2.5 × 3.5 in), edge to edge with crop marks. Keep `private.html` and `scenario.json` away from the defender, and keep each round's private material apart. Add `--cover-image path/to/key-art.png` to put raster key art on the box lid instead of the generated cover. See [prototype rules](docs/prototype-rules.md) for setup and a complete match, and the [art direction](docs/art-direction.md) for the visual system.
 
-A complete rendered kit is committed in [`print/kit-seed-42/`](print/kit-seed-42): every HTML file above, a PDF of each, `scenario.json`, and `box-lid-art.png` (the lid cover at 240 dpi). The rulebook and box files do not depend on the seed. That folder includes seed 42's private answers, so treat seeds 42 and 43 as spoiled for real play and generate a fresh seed instead.
+A complete rendered kit is committed in [`print/kit-seed-42/`](print/kit-seed-42): every HTML file above, a PDF of each, `scenario.json`, and `box-lid-art.png` (a 240 dpi preview export of the lid). The rulebook and box files do not depend on the seed. That folder includes seed 42's private answers, so treat seeds 42 and 43 as spoiled for real play and generate a fresh seed instead.
 
 For the professionally printed copy, `--edition fixed` builds a reusable set instead: four fixed training decks, three truth cards drawn in secret, and sixteen reference cards that replace the private slips and keys, so nothing is printed per game. It writes `cards.html` (one-sided), `duplex.html` (double-sided), `backs.html`, the edition's rulebook, and its box; a rendered copy is in [`print/fixed-edition/`](print/fixed-edition). See the [fixed-deck edition](docs/fixed-deck-edition.md) for the rules changes and how the decks were chosen.
+
+Both editions include the painted Mallory/Sorter portraits and label-swapping cover. [Artwork originals and prompts](assets/art/README.md) are committed; HTML embeds them for offline printing. The current lid illustration is about 169 effective ppi at full size, so the professional order still needs the supplier's template, resolution check and a physical proof.
+
+To export a newly generated kit to PDF, install Chrome or Chromium and run the optional authoring tool:
+
+```sh
+python3 tools/render_print.py artifacts/kit-42
+```
+
+It uses the HTML's paper sizes, prints backgrounds, and omits browser headers and footers. The committed PDFs are ready for prototype printing; the helper and HTML generator do not need a browser installed.
 
 Generated output directories must be new; commands refuse to overwrite an existing directory. The `artifacts/` directory is ignored by Git. Keep important releases outside that scratch directory or add them intentionally when publishing a version.
 
@@ -87,7 +97,9 @@ poisoned_dataset/components.py   Printable cards, tokens and private references
 poisoned_dataset/decks.py        Fixed decks for the printed edition, chosen from development seeds
 poisoned_dataset/edition.py      The fixed-deck edition: truth cards, reference cards, print sheets
 poisoned_dataset/match.py        Match winner and tiebreakers, with simulated draw rates
-poisoned_dataset/art.py          Procedural, seeded SVG artwork shared by all print pieces
+poisoned_dataset/art.py          SVG game symbols and shared painted artwork
+assets/art/                     Painted originals, concept references and exact prompts
+tools/render_print.py           Optional Chrome/Chromium PDF exporter
 poisoned_dataset/rulebook.py     Illustrated 12-page rulebook and booklet imposition
 poisoned_dataset/box.py          Box dielines, cover layout and packing plan
 poisoned_dataset/experiments.py  Paired simulation and result export

@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-19",
+  "generator": "Built-in image_gen tool",
+  "status": "User selected B's texture with A's robots; preserved as references for the v02 artwork",
+  "visual_reference": {
+    "title": "Clank! A Deck-Building Adventure",
+    "url": "https://www.clankgame.com/clank/",
+    "use": "User-requested broad visual reference. Generated original subjects; no reference image files supplied to the generator."
+  },
+  "demos": [
+    {
+      "id": "A",
+      "file": "01-painted-workshop-v01.png",
+      "pixels": [
+        1536,
+        1024
+      ],
+      "transparent_background": false,
+      "prompt": "Use case: illustration-story\nAsset type: first art-direction demo for the original tabletop game Poisoned Dataset; a landscape illustration that could later inform a box cover and rulebook.\nPrimary request: Colorful, humorous, hand-painted adventure board-game illustration with the broad approachable, mischievous spirit of Clank! Adapt that broad visual feel to an original moon-colony robot supply-sorting setting.\nScene: Inside a compact lunar cargo workshop, a large round window reveals gray moon hills and the Earth. A friendly, slightly battered utility robot is inspecting a detachable paper shipping label on a red striped round supply container, looking comically suspicious. Nearby are a blue plain square supply container and a few sorting bins. A smaller rival maintenance robot reaches in to sneakily exchange a second label, creating a readable visual joke about mislabeled cargo.\nStyle and medium: richly painted 2D tabletop adventure illustration, expressive character acting, appealing chunky silhouettes, organic ink accents, visible soft brush texture, exaggerated but carefully drawn machinery. Warm workshop light with cool moonlight; saturated but controlled color, rich shadows, tactile painted metal. Charming and adventurous enough for an all-ages strategy game.\nComposition: landscape around 3:2, one clear focal robot-and-label interaction, clear silhouettes and separated foreground/midground/background, generous crop-safe breathing room around the characters. Illustrative scene rather than a graphic layout.\nConstraints: Original robot characters and original workshop design. No Clank characters, dragon, logo, card borders, or existing game imagery. No words, letters, numbers, typography, badges, watermarks or captions. Label slips are blank graphic shapes. This is a style demo, so show art only, no physical game box or mockup. Avoid photorealism, 3D rendering, glossy mobile-game polish, gritty military science fiction, excessive tiny panels or decorative interface elements."
+    },
+    {
+      "id": "B",
+      "file": "02-inked-workshop-v01.png",
+      "pixels": [
+        1536,
+        1024
+      ],
+      "transparent_background": false,
+      "prompt": "Use case: illustration-story\nAsset type: art-direction demo B for the original tabletop game Poisoned Dataset; landscape narrative artwork for a printed adventure board game.\nPrimary request: An emphatically HAND-DRAWN, HAND-PAINTED 2D comic-fantasy board-game illustration, with the approachable humor and adventurous storytelling associated with the original Clank! board game's illustrations, adapted to an original lunar robot cargo workshop.\nScene and narrative: In a moon-colony sorting workshop, a friendly battered utility robot scrutinizes a blank detachable shipping label hanging from a red striped round cargo container. Its expression is skeptical and funny, with a tilted head and an oversized hand. A smaller mischievous rival maintenance robot at the side is sneakily swapping another blank label on a blue plain square cargo container. A round workshop window shows moon craters and Earth. Keep the label-swapping visual joke immediately legible.\nRendering treatment is the crucial requirement: expressive irregular ink contours, chunky black-brown outlines of varying weight, lively brush-drawn shapes, visible opaque gouache brushwork and paper grain, subtly wonky handmade construction, caricatured mechanical anatomy and poses, broad simple painted highlights and shadows. Clearly an illustration painted by hand in a fantasy adventure rulebook, with a deliberately flatter picture plane. Rich warm workshop colors against cool blue lunar background, limited value groups and strong readable silhouettes.\nComposition: roughly 3:2 landscape. Show both robot characters and their cargo fully enough to understand the action, one clear focal interaction, restrained background detail, comfortable crop margin around main subjects. Preserve clean readable cargo silhouettes rather than covering them with decoration.\nConstraints: Original characters, original setting, no existing Clank characters, logos or layouts. Art only, no box mockup, no card frame. Absolutely no words, letters, numerals, UI or watermarks; all shipping slips are blank. No 3D render appearance, no photorealism, no Pixar-style lighting or smooth plastic, no lens blur, no depth-of-field, no cinematic bloom, no slick mobile-game gradients. Prioritize ink and brush texture over polished volume."
+    }
+  ]
+}

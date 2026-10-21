@@ -1,8 +1,8 @@
-"""Procedural moon-colony artwork: inked outlines, chipped paint, gouache grain.
+"""Moon-colony artwork: painted characters with crisp procedural game symbols.
 
 Characters follow key art exhibit A (the visor robots); rendering follows exhibit B
-(hand-inked, painterly, scuffed). Every mark is seeded, so kits reproduce exactly
-and stay editable as vector source. Text is kept outside filters to print crisply.
+(hand-inked, painterly, scuffed). Raster originals live in assets/art; shared SVG
+symbols embed them once per document. Game features and text remain editable.
 """
 
 import struct
@@ -12,6 +12,7 @@ from functools import lru_cache
 from hashlib import sha256
 from html import escape
 from math import cos, hypot, pi, sin
+from pathlib import Path
 
 from .core import rng_for
 
@@ -27,6 +28,7 @@ C = {
 }
 SANS = "'Inter Display', Inter, 'Helvetica Neue', Arial, sans-serif"
 MONO = "'JetBrains Mono', 'DejaVu Sans Mono', ui-monospace, monospace"
+ASSET_ROOT = Path(__file__).resolve().parent.parent / "assets" / "art"
 
 DEFS_BASE = f"""<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <filter id="paint" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
@@ -94,9 +96,24 @@ def grain_tile(size: int = 192) -> str:
     return "data:image/png;base64," + b64encode(_png(size, size, px)).decode("ascii")
 
 
-def defs() -> str:
-    """Shared filters, gradients and the grain tile; include once per HTML document."""
-    return DEFS_BASE.replace("</defs>", f'<image id="grain" href="{grain_tile()}" width="64" height="64"/></defs>')
+@lru_cache(maxsize=3)
+def asset_uri(name: str) -> str:
+    """Embed the committed original, with no network or imaging dependencies."""
+    return "data:image/png;base64," + b64encode((ASSET_ROOT / name).read_bytes()).decode("ascii")
+
+
+def defs(include_cover: bool = False) -> str:
+    """Shared filters, grain and painted characters; include once per document."""
+    images = f'<image id="grain" href="{grain_tile()}" width="64" height="64"/>'
+    for name in ("mallory", "sorter"):
+        images += (f'<symbol id="painted-{name}" viewBox="0 0 1254 1254">'
+                   f'<image href="{asset_uri("characters/" + name + "-v02.png")}" '
+                   'width="1254" height="1254"/></symbol>')
+    if include_cover:
+        images += (f'<symbol id="painted-cover" viewBox="0 0 900 600">'
+                   f'<image href="{asset_uri("illustrations/label-swap-v02.png")}" '
+                   'width="900" height="600" preserveAspectRatio="xMidYMid slice"/></symbol>')
+    return DEFS_BASE.replace("</defs>", images + "</defs>")
 
 
 def grain(shape, key: str, opacity: float = 1) -> str:
@@ -240,24 +257,20 @@ def para(x, y, s, size, width, lead=1.32, weight=500, fill=INK, anchor="start", 
 def pod(cx, cy, r, color, striped, key):
     dark = C["red_dk"] if color == C["red"] else C["blue_dk"]
     body, band_top, band_bot = circle(cx, cy, r), cy - r * .5, cy + r * .5
-    strap = lambda y0, t: (f"M{f(cx - r)} {f(y0)}Q{f(cx)} {f(y0 + r * .14)} {f(cx + r)} {f(y0)}"
-                           f"V{f(y0 + t)}Q{f(cx)} {f(y0 + t + r * .14)} {f(cx - r)} {f(y0 + t)}Z")
     band = (f"M{f(cx - r)} {f(band_top + r * .16)}Q{f(cx)} {f(band_top + r * .3)} {f(cx + r)} {f(band_top + r * .16)}"
             f"V{f(band_bot)}Q{f(cx)} {f(band_bot + r * .14)} {f(cx - r)} {f(band_bot)}Z")
     inner = hatch((band, (cx - r, band_top, 2 * r, band_bot - band_top + r * .14)), C["stripe"], key=key) if striped else ""
-    inner += (f'<path d="{strap(band_top, r * .16)}" fill="{C["metal"]}" stroke="{INK}" stroke-width="1.6"/>'
-              f'<path d="{strap(band_bot, r * .16)}" fill="{C["metal"]}" stroke="{INK}" stroke-width="1.6"/>'
-              f'<path d="{circle(cx - r * .38, cy - r * .42, r * .5)[0]}" fill="#fff" opacity=".12"/>'
+    # Keep the face clear: structural bands across plain pods resembled stripes.
+    inner += (f'<path d="{circle(cx - r * .38, cy - r * .42, r * .5)[0]}" fill="#fff" opacity=".12"/>'
               f'<path d="{circle(cx + r * .3, cy + r * .35, r * .85)[0]}" fill="{dark}" opacity=".35"/>')
-    latch = rrect(cx + r * .52, cy - r * .62, r * .2, r * 1.24, r * .05)
+    latch = rrect(cx + r * .82, cy - r * .2, r * .12, r * .4, r * .04)
     handle = (f'<path d="M{f(cx - r * .3)} {f(cy - r * .93)}V{f(cy - r * 1.18)}H{f(cx + r * .3)}V{f(cy - r * .93)}" '
               f'fill="none" stroke="{INK}" stroke-width="{f(r * .17)}" stroke-linejoin="round"/>'
               f'<path d="M{f(cx - r * .3)} {f(cy - r * .93)}V{f(cy - r * 1.18)}H{f(cx + r * .3)}V{f(cy - r * .93)}" '
               f'fill="none" stroke="{C["metal"]}" stroke-width="{f(r * .09)}" stroke-linejoin="round"/>')
-    return (handle + part(body, color, key + "pod", 7, r * .09, extra=inner)
+    return (handle + part(body, color, key + "pod", 0, extra=inner)
             + part(latch, C["metal"], key + "latch", 1, r * .05, lw=1.6)
-            + "".join(f'<circle cx="{f(cx + r * .62)}" cy="{f(cy + k * r * .45)}" r="{f(r * .035)}" fill="{INK}"/>'
-                      for k in (-1, 0, 1)))
+            + f'<circle cx="{f(cx + r * .88)}" cy="{f(cy)}" r="{f(r * .025)}" fill="{INK}"/>')
 
 
 def crate(cx, cy, s, color, striped, key):
@@ -277,7 +290,7 @@ def crate(cx, cy, s, color, striped, key):
                    + f'<circle cx="{f(px + sx * s * .05)}" cy="{f(py + sy * s * .05)}" r="{f(s * .016)}" fill="{INK}"/>'
                    for px, py, sx, sy in ((x, y, 1, 1), (x + s, y, -1, 1), (x, y + s, 1, -1), (x + s, y + s, -1, -1)))
     slot = (f'<path d="{rrect(cx - s * .14, y + s * .035, s * .28, s * .055, s * .027)[0]}" fill="{INK}"/>')
-    return part(rrect(x, y, s, s, s * .06), color, key + "crate", 8, s * .045, extra=inner) + caps + slot
+    return part(rrect(x, y, s, s, s * .06), color, key + "crate", 0, extra=inner) + caps + slot
 
 
 def pallet(cx, y, w, key):
@@ -311,7 +324,7 @@ def cargo(red: int, round_: int, striped: int, key: str = "", night: bool = Fals
               f'<ellipse cx="113" cy="40" rx="70" ry="44" fill="url(#lamp)" opacity=".55"/>')
     shadow = f'<ellipse cx="113" cy="148" rx="68" ry="7" fill="{INK}" opacity=".35"/>'
     item = (pod(113, 78, 50, color, striped, key) if round_ else crate(113, 80, 96, color, striped, key))
-    return bg + painted(shadow + pallet(113, 128, 120, key) + item) + grain(box(226, 162), "panel", .45 if night else 1)
+    return bg + painted(shadow + pallet(113, 128, 120, key) + item) + grain(box(226, 162), "panel", .12)
 
 
 def stars(key, w, h, n):
@@ -349,8 +362,7 @@ def tag(label: str, w: float = 160, h: float = 55, key: str = "", blank: bool = 
     edge = f'stroke="{INK}" stroke-width="2"' if outline else ""
     body = (f'<path d="{tag_path(w, h)}" fill="{fill}" fill-rule="evenodd" {edge}/>'
             f'<circle cx="{f(h * .32 * 1.15)}" cy="{f(h / 2)}" r="{f(h * .16)}" fill="none" '
-            f'stroke="{C["metal"]}" stroke-width="{f(h * .06)}"/>'
-            + grain((tag_path(w, h), (0, 0, w, h)), "tag", 1 if fill == C["paper"] else .4))
+            f'stroke="{C["metal"]}" stroke-width="{f(h * .06)}"/>')
     if mirror:
         body = f'<g transform="translate({f(w)} 0) scale(-1 1)">{body}</g>'
     if blank:
@@ -396,7 +408,7 @@ def hexbolt(face: str, r: float = 50, number: int = 0) -> str:
     verified = face == "VERIFIED"
     fill = C["teal"] if verified else C["mustard"]
     ink = C["paper"] if verified else INK
-    art = painted(part(hexagon(0, 0, r), fill, "hex" + face, 4, r * .06, lw=2.6) + grain(hexagon(0, 0, r), "hex")
+    art = painted(part(hexagon(0, 0, r), fill, "hex" + face, 0, lw=2.6)
                   + f'<path d="{circle(0, 0, r * .62)[0]}" fill="none" stroke="{INK}" stroke-width="1.6" opacity=".55"/>')
     glyph = icon("check" if verified else "audit", ink, r * .7)
     return (art + f'<g transform="translate({f(-r * .35)} {f(-r * .72)})">{glyph}</g>'
@@ -406,111 +418,17 @@ def hexbolt(face: str, r: float = 50, number: int = 0) -> str:
 
 # --- Characters: exhibit A's cast, painted in exhibit B's hand -----------------------
 
-def eyes(left, right, rx, ry, look, lids, glow=C["eye"]):
-    out = []
-    for (ex, ey), lid in zip((left, right), lids):
-        out.append(f'<ellipse cx="{f(ex)}" cy="{f(ey)}" rx="{f(rx)}" ry="{f(ry)}" fill="{glow}"/>'
-                   f'<circle cx="{f(ex + look[0])}" cy="{f(ey + look[1])}" r="{f(rx * .48)}" fill="{C["visor"]}"/>'
-                   f'<circle cx="{f(ex + look[0] - rx * .2)}" cy="{f(ey + look[1] - rx * .22)}" r="{f(rx * .14)}" fill="#fff"/>')
-        if lid:
-            out.append(f'<path d="{lid}" fill="{C["visor"]}"/>')
-    return "".join(out)
-
-
-def hand(x, y, s, key, holding=""):
-    fingers = "".join(part(capsule(x + s * (.12 + .26 * k), y + s * .2, x + s * (.12 + .26 * k), y - s * .28, s * .13),
-                           C["metal_dk"], f"{key}f{k}", 0, lw=1.6) for k in range(3))
-    return holding + fingers + part(rrect(x - s * .05, y, s * .9, s * .7, s * .22), C["metal_dk"], key + "palm", 1, s * .08,
-                                    lw=1.8)
-
-
 def mallory(key: str = "m") -> str:
-    """The big shell-white robot with orange panels, a visor face and shifty eyes.
+    """Cream/orange attacker, in the original -40,-50 280 x 340 placement box."""
+    return '<use href="#painted-mallory" x="-40" y="-50" width="280" height="340"/>'
 
-    Drawn in a -40,-50 280 x 340 box, facing right, hand on chin, holding a tag aloft.
+
+def sorter(key: str = "s") -> str:
+    """Mustard defender, in the original -10,-40 210 x 220 placement box.
+
+    The shared painted pose carries an inspection glass.
     """
-    o = []
-    # Treads and hips.
-    o.append(part(rrect(52, 236, 128, 40, 18), C["metal_dk"], key + "tread", 3, 4))
-    for k, wx in enumerate((76, 116, 156)):
-        o.append(part(circle(wx, 256, 15), C["metal"], f"{key}w{k}", 1, 3, lw=2)
-                 + f'<circle cx="{wx}" cy="256" r="4.5" fill="{INK}"/>')
-    o.append(part(rrect(78, 218, 76, 24, 8), C["metal_dk"], key + "hip", 1, 3))
-    # Raised arm (drawn behind the torso) with a tag pinched in the fist.
-    o.append(part(capsule(54, 150, 8, 112, 12), C["shell"], key + "ua", 2, 3))
-    o.append(part(circle(8, 110, 10), C["metal_dk"], key + "elb", 0))
-    o.append(part(capsule(8, 110, 0, 54, 11), C["shell"], key + "fa", 2, 3,
-                  extra=f'<rect x="-14" y="74" width="30" height="9" fill="{C["orange"]}"/>'))
-    held = (f'<g transform="translate(-6 46) rotate(-118)">{tag("", 64, 26, key + "t", blank=True)}</g>')
-    o.append(hand(-14, 30, 30, key + "lh", held))
-    # Torso with orange hazard panels and a chest port.
-    chest = (f'<path d="M52 170L100 128H128L52 196Z" fill="{C["orange"]}"/>'
-             f'<path d="M52 205L118 145V160L52 220Z" fill="{C["orange"]}"/>'
-             f'<rect x="150" y="196" width="22" height="18" fill="{C["orange"]}"/>')
-    o.append(part(rrect(50, 128, 132, 100, 34), C["shell"], key + "torso", 6, 4.5, extra=chest))
-    o.append(part(circle(124, 186, 13), C["metal"], key + "port", 0, lw=2)
-             + f'<circle cx="124" cy="186" r="5" fill="{C["eye"]}" opacity=".85"/>')
-    o.append(part(circle(56, 146, 20), C["orange"], key + "lsh", 2, 3))
-    o.append(part(rrect(98, 110, 36, 24, 6), C["metal_dk"], key + "neck", 0))
-    # Head: helmet, orange corner panel, visor with scheming eyes, ear disc, antenna.
-    head = []
-    head.append(f'<path d="M171 18L184 -24" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>'
-                f'<path d="M171 18L184 -24" stroke="{C["metal"]}" stroke-width="2.2" stroke-linecap="round"/>')
-    head.append(part(circle(185, -27, 6), C["red"], key + "ant", 0, lw=2))
-    panel = (f'<path d="M140 14H196V58Q170 54 150 34Z" fill="{C["orange"]}"/>'
-             f'<path d="M36 92Q60 100 74 122H36Z" fill="{C["orange"]}"/>')
-    head.append(part(rrect(36, 12, 160, 108, 32), C["shell"], key + "helm", 7, 5, extra=panel))
-    lids = ("M66 40L122 62L122 38L66 38Z", "M126 60L184 46L184 38L126 38Z")
-    visor = (eyes((97, 72), (152, 72), 17, 19, (7, 3), lids)
-             + '<path d="M60 44Q66 36 80 36" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".25"/>')
-    head.append(part(rrect(52, 30, 132, 76, 22), C["visor"], key + "visor", 0, shade=False, extra=visor))
-    head.append(part(circle(36, 70, 18), C["orange"], key + "ear", 1, 3)
-                + part(circle(36, 70, 8), C["metal_dk"], key + "earc", 0, lw=1.6))
-    o.append(f'<g transform="rotate(-5 116 70)">{"".join(head)}</g>')
-    # Chin arm crossing in front, fingers to the visor.
-    o.append(part(circle(176, 146, 20), C["orange"], key + "rsh", 2, 3))
-    o.append(part(capsule(178, 150, 186, 204, 12), C["shell"], key + "rua", 2, 3))
-    o.append(part(circle(186, 206, 10), C["metal_dk"], key + "relb", 0))
-    o.append(part(capsule(186, 206, 140, 140, 12), C["shell"], key + "rfa", 2, 3,
-                  extra=f'<path d="M150 160L170 150L176 160L156 172Z" fill="{C["orange"]}"/>'))
-    o.append(hand(120, 122, 30, key + "rh"))
-    return painted("".join(o))
-
-
-def sorter(key: str = "s", reach: bool = True, holding: str = "") -> str:
-    """The small mustard tread-bot with a visor, big earnest eyes and a claw antenna.
-
-    Drawn in a -10,-40 210 x 220 box, facing left, one arm reaching right.
-    """
-    o = []
-    o.append(part(rrect(18, 140, 112, 34, 16), C["metal_dk"], key + "tread", 3, 4))
-    for k, wx in enumerate((40, 74, 108)):
-        o.append(part(circle(wx, 157, 12), C["metal"], f"{key}w{k}", 1, 3, lw=1.8)
-                 + f'<circle cx="{wx}" cy="157" r="3.5" fill="{INK}"/>')
-    o.append(part(capsule(42, 106, 18, 126, 7), C["mustard"], key + "la", 1, 3))
-    o.append(part(rrect(38, 90, 72, 54, 12), C["mustard"], key + "body", 4, 4,
-                  extra=f'<rect x="50" y="110" width="48" height="14" fill="{C["mustard"]}"/>'
-                        + hatch(rrect(50, 110, 48, 14, 1), INK, 10, 5, 45, key)))
-    o.append(part(rrect(64, 78, 20, 16, 4), C["metal_dk"], key + "neck", 0))
-    if reach:
-        o.append(part(circle(108, 102, 8), C["metal_dk"], key + "sh", 0))
-        o.append(part(capsule(108, 102, 142, 92, 7), C["mustard"], key + "ua", 1, 3))
-        o.append(part(capsule(142, 92, 172, 78, 6), C["mustard"], key + "fa", 1, 3))
-        o.append(holding)
-        o.append(f'<path d="M172 78l12-6M172 78l13 5" stroke="{INK}" stroke-width="6" stroke-linecap="round"/>'
-                 f'<path d="M172 78l12-6M172 78l13 5" stroke="{C["metal"]}" stroke-width="2.6" stroke-linecap="round"/>')
-    o.append(f'<path d="M108 14L120 -26" stroke="{INK}" stroke-width="4.5" stroke-linecap="round"/>'
-             f'<path d="M108 14L120 -26" stroke="{C["metal"]}" stroke-width="2" stroke-linecap="round"/>'
-             f'<path d="M113 -30q7-10 14-2M120 -26q2 -9 10-8" fill="none" stroke="{INK}" stroke-width="3.2" stroke-linecap="round"/>')
-    o.append(part(rrect(14, 10, 120, 76, 22), C["mustard"], key + "head", 5, 4.5,
-                  extra=f'<path d="M14 64Q40 74 60 86H14Z" fill="{C["mustard_dk"]}" opacity=".5"/>'))
-    lids = ("M38 28L72 34L72 26L38 26Z", "M78 34L112 28L112 26L78 26Z")
-    o.append(part(rrect(26, 22, 96, 52, 15), C["visor"], key + "visor", 0, shade=False,
-                  extra=eyes((56, 50), (92, 50), 13, 15, (-5, 1), lids)
-                  + '<path d="M34 34Q38 28 48 28" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".25"/>'))
-    o.append(part(circle(12, 50, 11), C["metal_dk"], key + "ear", 0)
-             + f'<circle cx="12" cy="50" r="4" fill="{C["mustard"]}"/>')
-    return painted("".join(o))
+    return '<use href="#painted-sorter" x="-10" y="-40" width="210" height="220"/>'
 
 
 # --- Places ------------------------------------------------------------------------
@@ -589,9 +507,9 @@ def logo(dark: bool = False) -> str:
     """The title on two hang-tags; the second one hangs askew, as if swapped. 640 x 260 box."""
     top = f'<path d="{tag_path(600, 120)}" fill="{C["paper"]}" fill-rule="evenodd" stroke="{INK}" stroke-width="4"/>'
     low = f'<path d="{tag_path(470, 100)}" fill="{C["slate"]}" fill-rule="evenodd" stroke="{INK}" stroke-width="4"/>'
-    t1 = (f'<g transform="translate(20 20) rotate(-3)">{painted(top + grain((tag_path(600, 120), (0, 0, 600, 120)), "logo"))}'
+    t1 = (f'<g transform="translate(20 20) rotate(-3)">{painted(top)}'
           + text(338, 92, "POISONED", 92, INK, 900, spacing=4) + "</g>")
-    t2 = (f'<g transform="translate(150 132) rotate(4)">{painted(low + grain((tag_path(470, 100), (0, 0, 470, 100)), "logo"))}'
+    t2 = (f'<g transform="translate(150 132) rotate(4)">{painted(low)}'
           + text(270, 78, "DATASET", 74, C["paper"], 900, spacing=8) + "</g>")
     string = (f'<path d="M0 0Q30 40 64 70M64 70Q120 150 190 182" fill="none" '
               f'stroke="{C["paper"] if dark else INK}" stroke-width="3" opacity=".85"/>')
@@ -599,30 +517,12 @@ def logo(dark: bool = False) -> str:
 
 
 def cover_scene(key: str = "cover") -> str:
-    """Key art after exhibits A and B on a 900 x 600 canvas; the top-left stays clear for the title."""
-    held = f'<g transform="translate(176 80) rotate(84)">{tag("", 54, 22, key + "st", blank=True)}</g>'
-    pod_art = painted(pallet(113, 128, 120, key + "p1") + pod(113, 78, 50, C["red"], 1, key + "pod"))
-    crate_art = painted(pallet(113, 128, 120, key + "p2") + crate(113, 80, 96, C["blue"], 0, key + "crate"))
-    return "".join([
-        '<rect width="900" height="600" fill="url(#shop)"/>',
-        shelves(14, 200, 220, 230, key + "a"), shelves(640, 330, 250, 100, key + "b"),
-        '<path d="M0 46H900M0 58H900" stroke="#5c3418" stroke-width="7" opacity=".5"/>',
-        lamp(300, 40, key + "l1"), lamp(520, 30, key + "l2"),
-        f'<g transform="translate(690 175)">{porthole(125, key)}</g>',
-        claw(872, 116, key + "claw"),
-        '<path d="M0 430H900V600H0Z" fill="url(#floor)"/>',
-        f'<path d="M0 430H900" stroke="{INK}" stroke-width="2" opacity=".5"/>',
-        "".join(f'<path d="M{450 + k * 130} 430L{450 + k * 260} 600" stroke="#5c3418" '
-                f'stroke-width="1.5" opacity=".35"/>' for k in range(-4, 5)),
-        f'<g transform="translate(36 245) scale(1.15)">{mallory(key + "m")}</g>',
-        f'<g transform="translate(160 318) scale(1.6)">{pod_art}</g>',
-        f'<g transform="translate(600 300) scale(1.45)">{crate_art}</g>',
-        f'<g transform="translate(500 300) scale(1.2)">{sorter(key + "s", holding=held)}</g>',
-        bin_(452, 486, key + "bin"),
-        f'<g filter="url(#blur)" opacity=".9">{crate(70, 590, 150, "#3b3a4f", 0, key + "f1")}'
-        f'{crate(850, 575, 140, "#5a3528", 0, key + "f2")}</g>',
-        grain(box(900, 600), "cover"),
-    ])
+    """900 x 600 key art: Mallory swaps a tag while Sorter looks away.
+
+    The quiet upper-left title area is part of the commissioned composition.
+    Include defs(include_cover=True) in the containing HTML document.
+    """
+    return '<use href="#painted-cover" width="900" height="600"/>'
 
 
 def scene_svg(w: float, h: float, body: str, label: str = "") -> str:

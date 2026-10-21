@@ -88,7 +88,7 @@ def wall(w: float, h: float, words: str, key: str) -> str:
     stripe = art.poly((-b, h - 26), (w + b, h - 26), (w + b, h + b), (-b, h + b))
     return (f'<rect x="{f(-b)}" y="0" width="{f(w + 2 * b)}" height="{f(h + b)}" fill="url(#shop)"/>'
             f'<path d="{stripe[0]}" fill="{C["mustard"]}"/>' + art.hatch(stripe, INK, 18, 9, 45, key)
-            + art.grain(art.box(w, h), key, .5) + words)
+            + art.grain(art.box(w, h), key, .12) + words)
 
 
 def panel_art(L: float, W: float, D: float, top: str, walls: dict[str, str], key: str) -> str:
@@ -131,9 +131,7 @@ def back_panel(L: float, W: float, edition: str = "seeded") -> str:
              "Deploy: lock the rule and score eight new cargo.")
     blurb = ("A rival robot has swapped some labels in your training data. Count, suspect, spend your few "
              "trusted checks, and find out whether your sorter learned the right rule.")
-    held = f'<g transform="translate(176 80) rotate(84)">{art.tag("", 54, 22, "bp", blank=True)}</g>'
     return (f'<rect x="{f(-b)}" y="{f(-b)}" width="{f(Lu + 2 * b)}" height="{f(Wu + 2 * b)}" fill="{C["paper"]}"/>'
-            + art.grain(art.box(Lu, Wu), "backpanel", .6)
             + text(40, 64, "Who changed the labels?", 26, INK, 900, "start")
             + para(40, 96, blurb, 12, 470, weight=500)[0]
             + text(40, 190, "HOW A ROUND GOES", 10, C["red_dk"], 900, "start", spacing=1.5)
@@ -145,9 +143,8 @@ def back_panel(L: float, W: float, edition: str = "seeded") -> str:
                       for k, s in enumerate(contents))
             + f'<svg x="{f(Lu - 330)}" y="40" width="300" height="300" viewBox="0 0 300 300">'
               f'<rect width="300" height="300" rx="14" fill="url(#shop)"/>'
-              f'<g transform="translate(-6 60) scale(.62)">{art.mallory("bp")}</g>'
-              f'<g transform="translate(140 130) scale(.68)">{art.sorter("bp", holding=held)}</g>'
-              f'{art.grain(art.box(300, 300), "bpart", .8)}'
+              f'<g transform="translate(36 32) scale(.62)">{art.mallory("bp")}</g>'
+              f'<g transform="translate(140 130) scale(.68)">{art.sorter("bp")}</g>'
               f'<rect width="300" height="300" rx="14" fill="none" stroke="{INK}" stroke-width="2.4"/></svg>'
             + text(Lu - 180, 372, "2 PLAYERS · TARGET 15–20 MIN", 10, INK, 900, spacing=1)
             + para(40, Wu - 52, "Draft 0.1 prototype. Rules, budgets and playing time are working hypotheses "
@@ -269,4 +266,4 @@ def build(out: Path, cover_image: Path | None = None, edition: str = "seeded") -
     body = f'<section class="tabloid">{lid}</section><section class="tabloid">{base}</section>{packing_plan(edition)}'
     (out / "box.html").write_text(
         '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Poisoned Dataset box mockup</title>'
-        f"<style>{STYLE}</style></head><body>{art.defs()}{body}</body></html>\n", encoding="utf-8")
+        f"<style>{STYLE}</style></head><body>{art.defs(include_cover=True)}{body}</body></html>\n", encoding="utf-8")
