@@ -8,7 +8,8 @@ Copy this sheet for each match or solo walkthrough. Use participant aliases and 
 | --- | --- |
 | Session date and alias | |
 | Rules and code revision | |
-| Mode | Tabletop, helper, or solo walkthrough |
+| Mode | Digital app, tabletop, terminal helper, or solo walkthrough |
+| Digital room and edition | Room code; fixed or fresh decks; attach completed JSON export |
 | Match seed and regime | |
 | Attack and audit budgets | |
 | Prior ML and tabletop experience | |

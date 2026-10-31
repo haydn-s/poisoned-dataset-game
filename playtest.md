@@ -6,7 +6,13 @@ Thank you for trying an early version of **Poisoned Dataset**, a two-player game
 
 ## Before you start
 
-Use two players and either the printed prototype kit or the computer helper. Your host can prepare both using the [setup instructions](README.md). For a helper match, run this from the repository folder:
+Use two players and the **digital Streamlit app**, printed prototype kit, or terminal helper. Your host can prepare them using the [setup instructions](README.md).
+
+For digital play, open the app address your host shares. One player creates a room; the other joins with its six-character code. Use separate devices or browser tabs. Save your private reconnect code from the sidebar before refreshing or closing the app; it restores your seat through **Reconnect**. Share only the room code with your opponent. The host starts the two-round match once both players are in. Keep the current player's secret screen private.
+
+The app handles label counts, budgets, auditing, and scoring. After the first reveal, both players select **Ready** to switch roles. After the match, use **Playtest feedback & download** to save feedback and download the match record. Feedback in that record is visible to both players. Download once both have saved their answers, then send it to your playtest host.
+
+For a terminal helper match, run this from the repository folder:
 
 ```sh
 python3 -m poisoned_dataset play
@@ -45,7 +51,7 @@ Ask your host whenever a rule is unclear. If comfortable, say what you are consi
 Copy this section into a message and send it to the person who invited you. Short answers are welcome; use an alias rather than your full name.
 
 - **Date and player aliases:**
-- **Printed kit or computer helper:**
+- **Digital app, printed kit, or terminal helper:**
 - **Match seed, if available:** The helper prints this after the match.
 - **Approximate explanation time / playing time:**
 - **Defender scores:** Player A ___ / 8; Player B ___ / 8.
@@ -62,7 +68,9 @@ If you played with printed pieces, also tell us which text, symbols, labels, or 
 
 ## Notes for the host
 
-Prepare and separate the two rounds' private references before players arrive. For printed play, cut the pieces, fold the tags and audit tokens, and Z-fold the audit slips; include this preparation time in your own notes. Use a scenario whose answers the players have not seen. Keep the current four-flip/four-audit budgets for this test and record any deviations.
+For digital play, share one running app address and use a separate room for each pair. Record whether you chose fixed or fresh decks. The app prepares the private references and saves the actions; still observe confusion, requests for help, and discussion. Collect the completed JSON record after both players save feedback. Its timestamps include pauses and are not a measurement of active playing time.
+
+For physical play, prepare and separate the two rounds' private references before players arrive. Cut the pieces, fold the tags and audit tokens, and Z-fold the audit slips; include this preparation time in your own notes. Use a scenario whose answers the players have not seen. Keep the current four-flip/four-audit budgets for this test and record any deviations.
 
 Explain the tie order and demonstrate an audit without revealing either round's true rule. Record rules questions, counting errors, requests for help, time spent on bookkeeping, and whether each role offered meaningful choices. Ask the feedback questions after both rounds so the prompts do not guide players' earlier decisions. Use the [host observation sheet](docs/playtest-record.md) for detailed notes. Ask permission before recording audio or video.
 
