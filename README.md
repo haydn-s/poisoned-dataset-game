@@ -8,6 +8,8 @@ A two-player tabletop prototype about training-data integrity. One player change
 
 Two players join a private room from separate browsers or devices. Multiple pairs can play in independent rooms on the same server. The app handles secret setup, four label flips, four paid audits, the learner's error counts, two rounds with roles reversed, and the current match tiebreakers. It uses the existing mechanics, not a new rules variant.
 
+The game room uses the original Mallory and Sorter portraits, illustrated cargo cards on a workshop table, a turn track, rule tiles, and audit tokens. Actions sit beside the table on desktop and above it on phones. **Room & rules** holds reconnect details and the rule reference.
+
 Use Python **3.12** (the tested interpreter) and run these commands from the repository root:
 
 ```sh
@@ -20,7 +22,7 @@ streamlit run streamlit_app.py --server.address 0.0.0.0
 Open the **Local URL** printed by Streamlit. For another device on the same Wi-Fi, use the **Network URL** printed by Streamlit, usually `http://<host-LAN-IP>:8501`. Keep the host computer awake and the server running; allow local network access if your firewall asks. `localhost` only works on the host computer. If the network blocks device-to-device traffic, use a hosted deployment instead. No accounts, external API keys, or dataset downloads are required.
 
 1. Choose an alias and **Create room**. The fixed edition is the default: two different decks drawn from A–D, with an independently drawn secret truth each round. **Fresh decks** reproduces the correlated generated-kit rules with a private random match seed.
-2. Share the app's address and the six-character room code. The other player chooses **Join room**. Each player should save their own **private reconnect code** from the sidebar before refreshing or closing the page.
+2. Share the app's address and the six-character room code. The other player chooses **Join room**. Each player should save their own **private reconnect code** from **Room & rules** before refreshing or closing the page.
 3. The host starts the match. Seat A defends first; seat B attacks first. Only the attacker sees the truth and clean labels during setup. The defender's board appears after the attack is committed.
 4. Flip labels using the attack selector. During defense, arrange the board by card order, look-alike groups, or current label; audit cards individually or stop early with **Lock & reveal**. The optional conflict hint uses only visible evidence.
 5. Review round one and both choose **Ready** to switch roles. After round two, submit feedback and download the JSON playtest record. It contains both rounds, the seed, labels, actions, timestamps, scores, tiebreaker, and saved feedback, with no reconnect codes. Download again after both players save feedback.
@@ -131,6 +133,8 @@ This models label poisoning and trusted auditing of a deliberately small learner
 
 ```text
 streamlit_app.py                 Multiplayer Streamlit playtest interface
+poisoned_dataset/room_ui.py      Player seats, rule tiles, tokens and shared game-room visuals
+assets/game-room.css            Responsive workshop table and interface styling
 poisoned_dataset/rooms.py        Private room views, transactional turns and playtest records
 poisoned_dataset/core.py         Learning, data generation, attacks, auditing
 poisoned_dataset/cli.py          Shared-terminal match and command-line interface

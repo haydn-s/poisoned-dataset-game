@@ -66,7 +66,7 @@ class StreamlitTests(unittest.TestCase):
         next(t for t in self.b.text_input if t.label == "Private reconnect code").set_value(token)
         self.click(self.b, "Return to my seat")
         self.assertEqual(tuple(self.b.session_state["credentials"]), (code, token))
-        self.assertTrue(any("Waiting for player" in m.value for m in self.b.markdown))
+        self.assertTrue(next(b for b in self.b.button if b.label == "Start two-round match").disabled)
 
 
 if __name__ == "__main__":
