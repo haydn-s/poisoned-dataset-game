@@ -13,11 +13,15 @@ import json
 from pathlib import Path
 import secrets
 import sqlite3
+import os
+import time
+from uuid import uuid4
 
 from . import decks
 from .core import (Card, LABELS, RULES, accuracy, errors, fit, flip_labels,
                    generate, predict, rng_for, test_deck)
 from .match import AUDITS, FLIPS, Defence, winner
+from .playtesting import game_record, target_directory
 
 VERSION = "digital-0.1"
 ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -87,13 +91,20 @@ class RoomStore:
     double clicks cannot spend a second token or commit a second attack.
     """
 
-    def __init__(self, path):
+    def __init__(self, path, log_dir=None, archive_directory="playtests"):
         self.path = Path(path).expanduser().resolve()
+        self.log_dir = Path(log_dir).expanduser().resolve() if log_dir else self.path.parent / "playtest-archive"
+        self.archive_directory = target_directory(archive_directory)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connection() as db:
             db.execute("PRAGMA journal_mode=WAL")
             db.execute("CREATE TABLE IF NOT EXISTS rooms "
                        "(code TEXT PRIMARY KEY, state TEXT NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS playtest_outbox ("
+                       "path TEXT PRIMARY KEY, room TEXT NOT NULL, payload TEXT NOT NULL, digest TEXT NOT NULL, "
+                       "local_digest TEXT, sent_digest TEXT, error TEXT, attempts INTEGER NOT NULL DEFAULT 0, "
+                       "retry_at REAL NOT NULL DEFAULT 0)")
+        self.materialize_logs()
 
     @contextmanager
     def connection(self):
@@ -110,9 +121,92 @@ class RoomStore:
             raise RoomError("Room not found. Check the room code and the app address.")
         return json.loads(row[0])
 
-    def _save(self, db, state):
+    def _save(self, db, state, seat, action):
         state["revision"] += 1
+        self._record(db, state, seat, action)
         db.execute("UPDATE rooms SET state = ? WHERE code = ?", (json.dumps(state), state["code"]))
+
+    def _queue(self, db, state, path, record):
+        payload = json.dumps(record, indent=2, ensure_ascii=False) + "\n"
+        fingerprint = sha256(payload.encode()).hexdigest()
+        db.execute("INSERT INTO playtest_outbox (path, room, payload, digest) VALUES (?, ?, ?, ?) "
+                   "ON CONFLICT(path) DO UPDATE SET payload=excluded.payload, digest=excluded.digest, "
+                   "error=NULL, attempts=0, retry_at=0 WHERE playtest_outbox.digest != excluded.digest",
+                   (path, state["code"], payload, fingerprint))
+
+    def _record(self, db, state, seat, action):
+        # Old rooms acquire logging on their next action; no credentials are
+        # backfilled into the public record, and no previous rooms are uploaded.
+        state.setdefault("match_id", uuid4().hex)
+        state.setdefault("events", [])
+        event = {"revision": state["revision"], "at": now(), "actor": seat, "action": action,
+                 "phase": state["phase"], "round": len(state["rounds"])}
+        if action == "audit":
+            event["audit"] = deepcopy(state["rounds"][-1]["audits"][-1])
+        # Attack choices stay in the private room state until the round reveal.
+        state["events"].append(event)
+        folder = f'{self.archive_directory}/{state["created_at"][:10]}/{state["match_id"]}'
+        record = game_record(state)
+        if state["phase"] == "complete":
+            record.update(outcome=outcome_of(state["rounds"]),
+                          rules={"priority": list(RULES), "labels": list(LABELS), "regime": "correlated"},
+                          test_deck=[asdict(c) for c in test_deck()])
+        self._queue(db, state, folder + "/game.json", record)
+        if action == "feedback":
+            self._queue(db, state, folder + f"/reviews/{seat}.json",
+                        {"schema_version": 1, "match_id": state["match_id"], "code": state["code"],
+                         "seat": seat, "alias": state["players"][seat]["name"],
+                         "revision": state["revision"], **state["feedback"][seat]})
+
+    def materialize_logs(self):
+        """Atomically write the latest queued files, serializing competing tabs.
+
+        SQLite remains authoritative if the directory is temporarily unwritable.
+        Every action and app rerun retries unfinished local writes.
+        """
+        try:
+            with self.connection() as db:
+                db.execute("BEGIN IMMEDIATE")
+                rows = db.execute("SELECT path, payload, digest FROM playtest_outbox "
+                                  "WHERE local_digest IS NULL OR local_digest != digest").fetchall()
+                for path, payload, fingerprint in rows:
+                    destination = self.log_dir / path
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    temporary = destination.with_suffix(".json.tmp")
+                    temporary.write_text(payload, encoding="utf-8")
+                    os.replace(temporary, destination)
+                    db.execute("UPDATE playtest_outbox SET local_digest=? WHERE path=?", (fingerprint, path))
+        except OSError:
+            return  # The durable outbox retains the work for the next attempt.
+
+    def pending_uploads(self):
+        with self.connection() as db:
+            db.row_factory = sqlite3.Row
+            return [dict(r) for r in db.execute(
+                "SELECT path, payload, digest, attempts FROM playtest_outbox "
+                "WHERE (sent_digest IS NULL OR sent_digest != digest) AND retry_at <= ? "
+                "ORDER BY path LIMIT 20", (time.time(),))]
+
+    def upload_succeeded(self, item):
+        with self.connection() as db:
+            db.execute("UPDATE playtest_outbox SET sent_digest=?, error=NULL, attempts=0, retry_at=0 "
+                       "WHERE path=? AND digest=?", (item["digest"], item["path"], item["digest"]))
+
+    def upload_failed(self, item, error):
+        with self.connection() as db:
+            delay = min(300, 10 * 2 ** min(item["attempts"], 5))
+            db.execute("UPDATE playtest_outbox SET error=?, attempts=attempts+1, retry_at=? "
+                       "WHERE path=? AND digest=?", (error, time.time() + delay, item["path"], item["digest"]))
+
+    def logging_status(self, code, token):
+        with self.connection() as db:
+            state = self._load(db, code)
+            self._seat(state, token)
+            rows = db.execute("SELECT local_digest = digest, sent_digest = digest, error "
+                              "FROM playtest_outbox WHERE room=?", (state["code"],)).fetchall()
+        return {"files": len(rows), "local_pending": sum(not local for local, _, _ in rows),
+                "remote_pending": sum(not sent for _, sent, _ in rows),
+                "error": next((error for _, _, error in rows if error), None)}
 
     def _seat(self, state, token):
         for seat, player in state["players"].items():
@@ -136,7 +230,9 @@ class RoomStore:
                      "seed": secrets.randbits(52), "players": {
                          "A": {"name": name, "credential": digest(token)}},
                      "rounds": [], "feedback": {}}
+            self._record(db, state, "A", "create")
             db.execute("INSERT INTO rooms VALUES (?, ?)", (code, json.dumps(state)))
+        self.materialize_logs()
         return code, token
 
     def join(self, code, name):
@@ -150,7 +246,8 @@ class RoomStore:
             if name.casefold() == state["players"]["A"]["name"].casefold():
                 raise RoomError("Choose a different alias so the two players are easy to tell apart.")
             state["players"]["B"] = {"name": name, "credential": digest(token)}
-            self._save(db, state)
+            self._save(db, state, "B", "join")
+        self.materialize_logs()
         return state["code"], token
 
     def act(self, code, token, revision, action, payload=None):
@@ -214,14 +311,17 @@ class RoomStore:
                         or any(type(payload.get(k)) is not int or not 1 <= payload[k] <= 5
                                for k in ("clarity", "enjoyment"))
                         or any(not isinstance(payload.get(k), str) or len(payload[k]) > 3000
-                               for k in ("reasoning", "decisions", "improvement"))):
+                               for k in ("reasoning", "decisions", "improvement"))
+                        or not isinstance(payload.get("review", ""), str) or len(payload.get("review", "")) > 3000):
                     raise RoomError("Supply ratings from 1 to 5 and notes of at most 3,000 characters.")
                 state["feedback"][seat] = {k: payload[k] for k in
                                           ("clarity", "enjoyment", "reasoning", "decisions", "improvement")}
                 state["feedback"][seat]["at"] = now()
+                state["feedback"][seat]["review"] = payload.get("review", "").strip()
             else:
                 raise RoomError("Unknown game action.")
-            self._save(db, state)
+            self._save(db, state, seat, action)
+        self.materialize_logs()
 
     @staticmethod
     def _require(condition):
@@ -270,4 +370,6 @@ class RoomStore:
         record["outcome"] = outcome_of(state["rounds"])
         record["test_deck"] = [asdict(c) for c in test_deck()]
         record["rules"] = {"priority": list(RULES), "labels": list(LABELS), "regime": "correlated"}
+        record["events"] = deepcopy(state.get("events", []))
+        record["match_id"] = state.get("match_id")
         return record

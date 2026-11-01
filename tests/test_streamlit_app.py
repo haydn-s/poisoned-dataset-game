@@ -14,7 +14,8 @@ class StreamlitTests(unittest.TestCase):
         from streamlit.testing.v1 import AppTest
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        env = patch.dict(os.environ, {"POISONED_DATASET_DB": str(Path(self.tmp.name) / "ui.sqlite3")})
+        env = patch.dict(os.environ, {"POISONED_DATASET_DB": str(Path(self.tmp.name) / "ui.sqlite3"),
+                                      "PLAYTEST_GITHUB_TOKEN": ""})
         env.start()
         self.addCleanup(env.stop)
         app = str(Path(__file__).resolve().parents[1] / "streamlit_app.py")
@@ -53,8 +54,13 @@ class StreamlitTests(unittest.TestCase):
         lock = next(b.label for b in self.b.button if b.label.startswith("Lock "))
         self.click(self.b, lock)
         self.assertTrue(any("wins the match" in t.value or "draw" in t.value for t in self.b.title))
-        self.click(self.b, "Save feedback")
-        self.assertTrue(any("Feedback saved: Bob" in m.value for m in self.b.markdown))
+        next(t for t in self.b.text_area if t.label == "Your review").set_value("I would play again.")
+        self.click(self.b, "Save review")
+        self.assertTrue(any("Reviews saved: Bob" in m.value for m in self.b.markdown))
+        saved = list(Path(self.tmp.name).rglob("reviews/B.json"))
+        self.assertEqual(len(saved), 1)
+        import json
+        self.assertEqual(json.loads(saved[0].read_text())["review"], "I would play again.")
         self.a.run()
         self.assertEqual(list(self.a.exception), [])
 

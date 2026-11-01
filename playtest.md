@@ -10,7 +10,7 @@ Use two players and the **digital Streamlit app**, printed prototype kit, or ter
 
 For digital play, open the app address your host shares. One player creates a room; the other joins with its six-character code. Use separate devices or browser tabs. Save your private reconnect code from **Room & rules** before refreshing or closing the app; it restores your seat through **Reconnect**. Share only the room code with your opponent. The host starts the two-round match once both players are in. Keep the current player's secret screen private.
 
-The app handles label counts, budgets, auditing, and scoring. After the first reveal, both players select **Ready** to switch roles. After the match, use **Playtest feedback & download** to save feedback and download the match record. Feedback in that record is visible to both players. Download once both have saved their answers, then send it to your playtest host.
+The app handles label counts, budgets, auditing, and scoring. Game actions are logged automatically. After the first reveal, both players select **Ready** to switch roles. After the match, use **Leave a review & download** to submit your optional review and ratings. Reviews are saved automatically when submitted; you can edit your response with the same form. This project's archive is public, so use an alias and leave out personal details. The optional match download includes both players' saved reviews; download again once both have submitted if you want your own complete copy.
 
 For a terminal helper match, run this from the repository folder:
 

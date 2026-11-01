@@ -11,17 +11,35 @@ from poisoned_dataset import room_ui as ui
 from poisoned_dataset.core import (LABELS, Card, conflict_scores,
                                    flip_labels, predict, test_deck)
 from poisoned_dataset.rooms import RoomError, RoomStore
+from poisoned_dataset.playtesting import ArchiveConfig, ArchiveSync, DEFAULT_REPOSITORY
 
 ROOT = Path(__file__).resolve().parent
 st.set_page_config(page_title="Poisoned Dataset · Playtest", page_icon="🌒", layout="wide", initial_sidebar_state="collapsed")
 
 
 @st.cache_resource
-def get_store(path):
-    return RoomStore(path)
+def get_store(path, log_dir, directory):
+    return RoomStore(path, log_dir=log_dir, archive_directory=directory)
 
 
-store = get_store(os.environ.get("POISONED_DATASET_DB", str(ROOT / "data" / "playtests.sqlite3")))
+@st.cache_resource
+def get_archive(_store, path, config):
+    return ArchiveSync(_store, config)
+
+
+try:
+    settings = dict(st.secrets.get("playtesting", {}))
+except FileNotFoundError:
+    settings = {}
+archive_config = ArchiveConfig(
+    repository=os.environ.get("PLAYTEST_GITHUB_REPOSITORY", settings.get("repository", DEFAULT_REPOSITORY)),
+    directory=os.environ.get("PLAYTEST_GITHUB_DIRECTORY", settings.get("directory", "playtests")),
+    token=os.environ.get("PLAYTEST_GITHUB_TOKEN", settings.get("github_token", "")).strip())
+db_path = os.environ.get("POISONED_DATASET_DB", str(ROOT / "data" / "playtests.sqlite3"))
+store = get_store(db_path, os.environ.get("POISONED_DATASET_LOG_DIR", settings.get("local_directory")), archive_config.directory)
+archive = get_archive(store, db_path, archive_config)
+store.materialize_logs()
+archive.kick()
 
 st.html("<style>" + (ROOT / "assets" / "game-room.css").read_text() + "</style>")
 
@@ -65,6 +83,8 @@ def landing():
         st.html('<div class="eyebrow">THE GAME ROOM</div><h2 class="lounge-heading">There’s a seat for you.</h2>'
                 '<p class="room-intro">Bring a rival. Take turns sabotaging and protecting a sorting robot. '
                 'The best defender takes the match.</p>')
+        st.caption("Playtest notice: game actions and submitted reviews are collected for game design. "
+                   "The project’s archive is public. Use an alias and leave out personal details.")
         create, join, resume = st.tabs(["Create room", "Join room", "Reconnect"])
         with create, st.form("create_room"):
             name = st.text_input("Your alias", max_chars=32)
@@ -276,31 +296,38 @@ def finished(view):
                          f'<h3>{escape(players[seat])}</h3><div class="points">{result["points"]}<small> / 8</small></div>'
                          f'<p>Poison found: {result["found"]} · Tokens spent: {result["spent"]}</p></div>')
     st.html('<div class="standings">' + ''.join(standings) + '</div>')
-    reviews, feedback = st.tabs(["Round reviews", "Playtest feedback & download"])
+    reviews, feedback = st.tabs(["Round reviews", "Leave a review & download"])
     with reviews:
         for r in view["history"]:
             with st.expander(f"Round {r['number']} · {r['deck']}", expanded=r["number"] == 2):
                 reveal(r, players)
     with feedback:
-        st.subheader("Help shape the next playtest")
-        st.caption("Use aliases. Your feedback is included in the record both players can download. "
-                   "Ratings describe this playtest; they do not measure learning.")
+        st.subheader("How was your time at the table?")
+        st.caption("Reviews are optional and saved automatically when submitted. They are included in both "
+                   "players’ downloads and the public playtest archive. Use your alias and leave out personal details.")
         saved = view["feedback"]
         with st.form("feedback"):
-            clarity = st.slider("Rule clarity · 1 confusing / 5 clear", 1, 5, saved.get("clarity", 3))
-            enjoyment = st.slider("Enjoyment · 1 low / 5 high", 1, 5, saved.get("enjoyment", 3))
-            reasoning = st.text_area("Why did the robot select its final rule?", value=saved.get("reasoning", ""), max_chars=3000)
-            decisions = st.text_area("Which choices mattered? Did the tiebreak feel fair?", value=saved.get("decisions", ""), max_chars=3000)
-            improvement = st.text_area("What was confusing, and what would you change?", value=saved.get("improvement", ""), max_chars=3000)
-            if st.form_submit_button("Save feedback", type="primary"):
+            review = st.text_area("Your review", value=saved.get("review", ""), max_chars=3000,
+                                  placeholder="What worked, what didn’t, and would you play again?")
+            clarity_col, enjoyment_col = st.columns(2)
+            clarity = clarity_col.slider("Rule clarity · 1 confusing / 5 clear", 1, 5, saved.get("clarity", 3))
+            enjoyment = enjoyment_col.slider("Enjoyment · 1 low / 5 high", 1, 5, saved.get("enjoyment", 3))
+            with st.expander("Optional debrief · tell us more"):
+                reasoning = st.text_area("Why did the robot select its final rule?", value=saved.get("reasoning", ""), max_chars=3000)
+                decisions = st.text_area("Which choices mattered? Did the tiebreak feel fair?", value=saved.get("decisions", ""), max_chars=3000)
+                improvement = st.text_area("What was confusing, and what would you change?", value=saved.get("improvement", ""), max_chars=3000)
+            if st.form_submit_button("Save review", type="primary", width="stretch"):
                 act(view, "feedback", {"clarity": clarity, "enjoyment": enjoyment, "reasoning": reasoning,
-                                       "decisions": decisions, "improvement": improvement})
-        st.write("Feedback saved: " + (", ".join(players[s] for s in view["feedback_received"]) or "none yet"))
+                                       "decisions": decisions, "improvement": improvement, "review": review})
+        if saved:
+            st.success("Your review is saved. You can update it using the same form.")
+        st.write("Reviews saved: " + (", ".join(players[s] for s in view["feedback_received"]) or "none yet"))
         code, token = st.session_state["credentials"]
         record = store.export(code, token)
         st.download_button("Download playtest record (.json)", json.dumps(record, indent=2),
                            file_name=f"poisoned-dataset-{code}.json", mime="application/json")
-        st.caption("Includes decks, seed, labels, attacks, audit order, timestamps, scores, and saved feedback. "
+        st.caption("The game log and reviews are saved automatically; this download is an extra copy. "
+                   "Includes decks, seed, labels, attacks, audit order, timestamps, scores, and saved feedback. "
                    "Download again after both players save their feedback.")
     st.caption("For another match, leave this room and create a new one. Save the playtest record first.")
 
@@ -308,8 +335,22 @@ def finished(view):
 @st.fragment(run_every="2s")
 def poll_room(code, token, revision):
     try:
+        store.materialize_logs()
+        archive.kick()
         if store.view(code, token)["revision"] != revision:
             st.rerun()
+        status = store.logging_status(code, token)
+        if not status["files"]:
+            local = "Game logging begins with the next game action."
+        else:
+            local = "Game log saved on this server." if not status["local_pending"] else "Game log queued for a server file copy."
+        if not archive_config.token:
+            remote = "Online archive awaiting host setup."
+        elif status["remote_pending"]:
+            remote = "Online archive queued; saves retry automatically."
+        else:
+            remote = "Online archive up to date."
+        st.caption(local + " " + remote)
     except RoomError:
         st.rerun()
 
