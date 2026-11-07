@@ -188,15 +188,15 @@ def score_card() -> str:
         f'stroke="{INK}" stroke-width="1.2"/>' for k in range(n))
     block = lambda y, title: (text(22, y, title, 9, INK, 800, "start", spacing=1) + boxes(22, y + 8, 8, 19, 23)
                               + text(226, y + 23, "/ 8", 11, INK, 800, "end")
-                              + text(22, y + 42, "POISON FOUND", 7.5, INK, 800, "start", spacing=.6)
+                              + text(22, y + 42, "POISON LEFT", 7.5, INK, 800, "start", spacing=.6)
                               + boxes(104, y + 33, 4, 12, 16)
-                              + text(22, y + 58, "TOKENS SPENT", 7.5, INK, 800, "start", spacing=.6)
+                              + text(22, y + 58, "CLEAN AUDITS", 7.5, INK, 800, "start", spacing=.6)
                               + boxes(104, y + 49, 4, 12, 16))
     body = (f'<g transform="translate(150 22) scale(.42)">{art.sorter("score")}</g>'
             + text(22, 48, "DEPLOYMENT", 17, INK, 900, "start") + text(22, 68, "REPORT", 17, INK, 900, "start")
             + block(110, "ROUND 1 · DEFENDER A") + block(192, "ROUND 2 · DEFENDER B")
-            + para(125, 280, "Higher defender score wins. If tied, more poison found wins, then fewer tokens "
-                   "spent; otherwise a draw.", 9, 205, anchor="middle")[0])
+            + para(125, 280, "Higher defender score wins. If tied, less poison left wins, then fewer clean "
+                   "audits; otherwise a draw.", 9, 205, anchor="middle")[0])
     return card("score", "Score card", body)
 
 

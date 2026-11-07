@@ -10,7 +10,7 @@ import streamlit as st
 from poisoned_dataset import room_ui as ui
 from poisoned_dataset.core import (LABELS, Card, conflict_scores,
                                    flip_labels, predict, test_deck)
-from poisoned_dataset.rooms import RoomError, RoomStore
+from poisoned_dataset.rooms import RoomError, RoomStore, tally
 from poisoned_dataset.playtesting import ArchiveConfig, ArchiveSync, DEFAULT_REPOSITORY
 
 ROOT = Path(__file__).resolve().parent
@@ -50,7 +50,9 @@ def rules():
 
     Each cargo card is red/blue, round/square, and striped/plain. The secret true
     rule says **STORE if red**, **STORE if round**, or **STORE if striped**;
-    otherwise RECYCLE. Only the attacker knows it before scoring.
+    otherwise RECYCLE. Only the attacker knows it before scoring. Before the
+    attack, every training label follows that rule exactly, so any label that
+    disagrees with it was flipped.
 
     1. **Poison:** the attacker flips up to four distinct training labels, then commits.
     2. **Audit:** the defender checks up to four cards, one at a time. Each check
@@ -60,9 +62,20 @@ def rules():
     4. **Reveal:** score one point per correct test card, out of eight. Switch roles
        for round two so each player defends once.
 
-    **Match winner:** higher defender score, then more poisoned labels found,
-    then fewer tokens spent. Otherwise it is a draw. An unused token does not
-    change a round's score. Identical cargo copies each need their own paid audit.
+    **Match winner:** higher defender score, then less **poison left** (flipped
+    labels you never audited), then fewer **clean audits** (checks of labels that
+    were already correct). Otherwise it is a draw. Each player's numbers come only
+    from the round they defended.
+
+    **Quick answers**
+
+    - The attacker may flip zero to four labels. The defender is not told how many.
+    - Every audit costs a token, even when the label was already correct. A card can
+      be audited only once, and there is no fifth token.
+    - Identical cargo copies each need their own paid audit.
+    - The hint is free and optional. It is a clue, not proof.
+    - The score depends only on the locked rule: the true rule scores 8/8 and any
+      other rule 4/8. An unused token does not change it.
     """)
     st.caption("The app deals and verifies the reference labels automatically. Inspection, sorting, "
                "and counting are free. Use a call or sit together to discuss the reveal.")
@@ -209,7 +222,7 @@ def defend(view):
             else:
                 st.info(f'{view["players"][r["defender"]]} is auditing. Your attack is locked.')
             ui.tokens(remaining)
-            st.caption(f"Poison found: {found}")
+            st.caption(f"Poison found: {found} · Clean audits: {len(verified) - found}")
             if r["audits"]:
                 last = r["audits"][-1]
                 changed = last["before"] != last["after"]
@@ -245,13 +258,14 @@ def defend(view):
 
 
 def reveal(round_, players):
-    result = round_["result"]
+    result, counts = round_["result"], tally(round_)
     st.html(f'<div class="reveal-banner"><div class="reveal-score">{result["points"]}<span> / 8</span></div>'
             f'<div><div class="eyebrow">ROUND {round_["number"]} · RESULTS ARE IN</div>'
             f'<h3>{escape(players[result["defender"]])}’s robot has spoken.</h3>'
             f'<p>True rule: <strong>{round_["truth"].upper()}</strong> · '
             f'Locked rule: <strong>{result["rule"].upper()}</strong><br>'
-            f'Poison found: {result["found"]} · Tokens spent: {result["spent"]}</p></div></div>')
+            f'Poison found: {counts["found"]} · Poison left: {counts["left"]} · '
+            f'Clean audits: {counts["clean"]}</p></div></div>')
     st.caption("Changed labels: " + (", ".join(round_["cards"][i]["id"] for i in round_["flips"]) or "None"))
     st.write(f'Learner after poisoning: **{round_["attack_rule"].upper()}** → '
              f'after auditing: **{result["rule"].upper()}**')
@@ -283,18 +297,18 @@ def finished(view):
     outcome, players = view["outcome"], view["players"]
     name = players.get(outcome["winner"])
     st.title(f"{name} wins the match" if name else "The match is a draw")
-    reason = {"points": "defender score", "found": "more poisoned labels found",
-              "spent": "fewer audit tokens spent", "draw": "equal scores and tiebreakers"}
+    reason = {"points": "defender score", "left": "less poison left in the training data",
+              "clean": "fewer clean audits", "draw": "equal scores and tiebreakers"}
     st.caption("Decided by " + reason[outcome["decided_by"]] + ".")
     standings = []
     for r in view["history"]:
-        result = r["result"]
+        result, counts = r["result"], tally(r)
         seat = result["defender"]
         won = outcome["winner"] == seat
         standings.append(f'<div class="standing {"winner" if won else ""}">'
                          f'<div class="eyebrow">{"MATCH WINNER" if won else "DEFENDER SCORE"}</div>'
                          f'<h3>{escape(players[seat])}</h3><div class="points">{result["points"]}<small> / 8</small></div>'
-                         f'<p>Poison found: {result["found"]} · Tokens spent: {result["spent"]}</p></div>')
+                         f'<p>Poison left: {counts["left"]} · Clean audits: {counts["clean"]}</p></div>')
     st.html('<div class="standings">' + ''.join(standings) + '</div>')
     reviews, feedback = st.tabs(["Round reviews", "Leave a review & download"])
     with reviews:
