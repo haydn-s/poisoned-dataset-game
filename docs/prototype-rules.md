@@ -39,14 +39,14 @@ Red makes 0 errors, round makes 2, and striped makes 2, so the learner selects r
 
 ## Round sequence
 
-1. **Secret poisoning.** With the defender looking away, the attacker may flip the labels of up to **four distinct training cards**. STORE becomes RECYCLE and vice versa. The attacker cannot change card features, add or remove cards, alter references, or change test cards. The attack is finished before the defender starts auditing.
+1. **Secret poisoning.** With the defender looking away, the attacker may flip the labels of up to **four distinct training cards**. STORE becomes RECYCLE and vice versa. The attacker cannot change card features, add or remove cards, alter references, or change test cards. The attack is finished before the defender starts auditing. Before this step, every training label follows the true rule exactly, so any label that disagrees with the true rule was flipped. The attacker may flip fewer than four labels, or none; the defender is not told how many.
 2. **Inspect the supplied data.** The defender sees all 24 feature cards and their current labels. Count the errors for each rule and announce the current winning rule. Inspection, grouping cards, and calculation are free.
 3. **Spend audit tokens.** The defender may spend up to **four tokens**, one at a time. Name one previously unaudited training card and pay one token. Reveal that card's trusted label and replace its current label with the reference label. Pay the cost even if the label was already correct. Mark the card verified. Recount the learner's errors after each audit.
 4. **Lock the learned rule.** When the defender stops auditing or runs out of tokens, choose the minimum-error rule using the tie order. The defender cannot choose a favorite rule instead. Unused tokens provide no score bonus.
 5. **Reveal and score.** Apply the locked rule to each of the eight test cards. Reveal their reference labels only now. Score one point per correct prediction, for a total out of eight. The attacker may not revise the attack or inspect the test labels earlier.
 6. **Review and switch roles.** Reveal the true rule, the changed labels, and the audits. Discuss what changed the selected rule. Set out the second round's fresh training deck and private references; switch attacker and defender.
 
-A verified card cannot be audited again. A check repairs only its own label; an identical-looking copy remains in training with its existing label until separately audited. No free relabeling, deleting examples, or adding new data is permitted in this version.
+A verified card cannot be audited again, and there is no fifth token. A check repairs only its own label; an identical-looking copy remains in training with its existing label until separately audited. No free relabeling, deleting examples, or adding new data is permitted in this version.
 
 The helper displays conflict-policy hints, but the human defender may audit any eligible card. A hint is a choice suggested by visible evidence, not a guarantee that the label is poisoned.
 
@@ -58,13 +58,13 @@ The professionally printed copy replaces per-seed printing with a reusable set. 
 
 Compare the scores players earned in their defender rounds. The higher defender score wins. If the scores are equal:
 
-1. The player who found more poisoned labels while defending wins. An audit finds poison exactly when the trusted label differs from the current label.
-2. If that is equal too, the player who spent fewer audit tokens wins.
+1. The player with less **poison left** wins: flipped labels that were never audited while that player defended.
+2. If that is equal too, the player with fewer **clean audits** wins: audits of labels that were already correct. An audit finds poison exactly when the trusted label differs from the current label; every other audit is clean.
 3. Otherwise the match is a draw.
 
-Both players have the same four-flip and four-audit budgets. Different scenarios are not guaranteed to have equal difficulty.
+Both players have the same four-flip and four-audit budgets. Different scenarios are not guaranteed to have equal difficulty. Both tiebreakers count the defender's misses, so an attacker gains nothing by flipping fewer labels than it could: holding back only leaves less poison for the opponent to miss.
 
-With these three rules and the uniform eight-card test deck, any incorrect feature rule scores 4/8 and the true rule scores 8/8. In simulation, half or more of matches tie on score, and the tiebreakers settle about half of those ties; see [match tiebreakers](match-tiebreakers.md). They decide only the match winner and change no round's accuracy, so evaluation protocol v1.0 is unaffected. The tiebreakers are provisional until playtests confirm them.
+With these three rules and the uniform eight-card test deck, any incorrect feature rule scores 4/8 and the true rule scores 8/8. In simulation, half or more of matches tie on score, and the tiebreakers settle most of those ties; see [match tiebreakers](match-tiebreakers.md). They decide only the match winner and change no round's accuracy, so evaluation protocol v1.0 is unaffected. The tiebreakers are provisional until playtests confirm them.
 
 ## Full information walkthrough
 

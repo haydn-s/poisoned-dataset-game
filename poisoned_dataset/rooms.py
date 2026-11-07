@@ -20,7 +20,7 @@ from uuid import uuid4
 from . import decks
 from .core import (Card, LABELS, RULES, accuracy, errors, fit, flip_labels,
                    generate, predict, rng_for, test_deck)
-from .match import AUDITS, FLIPS, Defence, winner
+from .match import AUDITS, FLIPS, Defence, decided_by, winner
 from .playtesting import game_record, target_directory
 
 VERSION = "digital-0.1"
@@ -67,21 +67,32 @@ def new_round(seed, number, edition):
             "started_at": now()}
 
 
+def tally(round_):
+    """Poison found, tokens spent, poison left and clean audits, from the round's own flips and audits.
+
+    Derived rather than read from the stored result, so rooms finished before poison left
+    and clean audits were recorded still display and decide correctly.
+    """
+    found = sum(a["before"] != a["after"] for a in round_["audits"])
+    spent = len(round_["audits"])
+    return {"found": found, "spent": spent, "left": len(round_["flips"]) - found, "clean": spent - found}
+
+
 def result_of(round_):
     cards = cards_of(round_)
     rule = fit(cards, round_["labels"])
     return {"defender": round_["defender"], "rule": rule,
-            "points": round(8 * accuracy(rule, round_["truth"])),
-            "found": sum(a["before"] != a["after"] for a in round_["audits"]),
-            "spent": len(round_["audits"])}
+            "points": round(8 * accuracy(rule, round_["truth"])), **tally(round_)}
+
+
+def defence_of(round_):
+    t = tally(round_)
+    return Defence(round_["result"]["points"], len(round_["flips"]), t["found"], t["spent"])
 
 
 def outcome_of(rounds):
-    results = [r["result"] for r in rounds]
-    a, b = (Defence(**{k: r[k] for k in ("points", "found", "spent")}) for r in results)
-    decided = next((name for name in ("points", "found", "spent")
-                    if getattr(a, name) != getattr(b, name)), "draw")
-    return {"winner": winner(a, b), "decided_by": decided}
+    a, b = (defence_of(r) for r in rounds)
+    return {"winner": winner(a, b), "decided_by": decided_by(a, b)}
 
 
 class RoomStore:

@@ -4,6 +4,11 @@ A round scores 4/8 or 8/8, so equal scores are common. The tiebreakers decide on
 the match winner; no round's accuracy changes, so evaluation protocol v1.0 is
 untouched. Simulations here use development seeds and the fixed decks, never the
 main seeds.
+
+Both tiebreakers count a defender's mistakes, so an attacker cannot game them by
+holding back. Under the earlier "more poison found" rule, a round-2 attacker whose
+opponent had already found poison could flip nothing and win the tie: there was
+nothing left to find. Poison left only grows when the attacker flips more.
 """
 
 from dataclasses import dataclass
@@ -17,13 +22,32 @@ FLIPS, AUDITS = 4, 4
 @dataclass(frozen=True)
 class Defence:
     points: int  # test cards right, out of eight
+    flips: int   # labels the attacker changed in this defender's round
     found: int   # audits that changed a tag; each one found a flipped label
     spent: int   # audit tokens used
 
+    @property
+    def left(self) -> int:
+        """Poison left: flipped labels still unaudited when the rule was locked."""
+        return self.flips - self.found
+
+    @property
+    def clean(self) -> int:
+        """Clean audits: tokens spent on labels that were already correct."""
+        return self.spent - self.found
+
+
+TIEBREAKS = ("points", "left", "clean")  # in order; points higher is better, the others lower
+
+
+def decided_by(a: Defence, b: Defence) -> str:
+    """The first of TIEBREAKS on which the defences differ, or 'draw'."""
+    return next((name for name in TIEBREAKS if getattr(a, name) != getattr(b, name)), "draw")
+
 
 def winner(a: Defence, b: Defence, tiebreak: bool = True) -> str | None:
-    """'A', 'B', or None for a draw: higher score, then more poison found, then fewer tokens spent."""
-    keys = (lambda d: d.points, lambda d: d.found, lambda d: -d.spent)
+    """'A', 'B', or None for a draw: higher score, then less poison left, then fewer clean audits."""
+    keys = (lambda d: d.points, lambda d: -d.left, lambda d: -d.clean)
     for key in keys if tiebreak else keys[:1]:
         if key(a) != key(b):
             return "A" if key(a) > key(b) else "B"
@@ -37,7 +61,7 @@ def play_round(cards, truth: str, defense: str, streams: tuple) -> Defence:
     flips = poison(cards, clean, FLIPS, "directed", rng_for(*streams, "attack"), truth)
     result = audit(cards, flip_labels(clean, flips), AUDITS, defense, clean.__getitem__,
                    rng_for(*streams, defense, "audit"))
-    return Defence(round(8 * accuracy(fit(cards, result.labels), truth)),
+    return Defence(round(8 * accuracy(fit(cards, result.labels), truth)), len(flips),
                    sum(a.before != a.after for a in result.audits), len(result.audits))
 
 

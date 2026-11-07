@@ -84,14 +84,16 @@ def play(seed: int, regime: str, attack_budget: int, audit_budget: int) -> None:
                   "reference", LABELS[predict(scenario.true_rule, card)])
         points = round(8 * accuracy(rule, scenario.true_rule))
         found = sum(before != after for _, before, after in history)
-        defences.append(Defence(points, found, len(history)))
+        defence = Defence(points, len(flips), found, len(history))
+        defences.append(defence)
         print(f"Defender {defender}: {points}/8. True rule: {scenario.true_rule}.")
         print("Flipped cards:", [scenario.cards[i].id for i in flips], "Audits:", history)
+        print(f"Poison found: {found}. Poison left: {defence.left}. Clean audits: {defence.clean}.")
         print("Discuss: why did this rule win, and which audit changed the evidence?")
     a, b = defences
     print(f"\nFinal defender scores: A {a.points}/8; B {b.points}/8.")
     if a.points == b.points:
-        print(f"Tied on score. Poison found: A {a.found}, B {b.found}. Tokens spent: A {a.spent}, B {b.spent}.")
+        print(f"Tied on score. Poison left: A {a.left}, B {b.left}. Clean audits: A {a.clean}, B {b.clean}.")
     result = winner(a, b)
     print("Draw." if result is None else f"Player {result} wins.")
     print("Match seed for your playtest record:", seed)

@@ -38,11 +38,19 @@ For each rule, count how many current training labels it predicts incorrectly. T
 
 ## Play a round
 
-1. **Attacker sets up in secret.** The attacker sees the true rule and correct training labels, then flips up to **four distinct labels**: STORE becomes RECYCLE or vice versa. Leave features, cards, and references unchanged. The defender first sees the labels after this step. The attacker makes no further changes.
+1. **Attacker sets up in secret.** The attacker sees the true rule and correct training labels, then flips up to **four distinct labels**: STORE becomes RECYCLE or vice versa. Before this step, every training label follows the true rule exactly, so any label that disagrees with the true rule was flipped. Leave features, cards, and references unchanged. The defender first sees the labels after this step. The attacker makes no further changes.
 2. **Defender inspects.** Look at the supplied training cards and labels, group cards if useful, and check which rule currently wins. Looking and counting are free.
 3. **Defender buys checks.** You have **four audit tokens**. Spend one to reveal one previously unchecked card's trusted label and replace that card's current label. A check costs a token even when the label was correct. Recalculate the winning rule after each check. A check repairs only the chosen card; identical-looking copies need their own paid checks. You may stop early. The helper's hints are optional suggestions, not proof of sabotage.
 4. **Lock and test.** Lock the rule selected by the error counts. Only then reveal the eight separate test cards and their reference labels. Score one point per correct prediction, out of eight. Keep test labels hidden during training and auditing.
-5. **Reveal and switch.** Discuss the changed labels and checks. Use the fresh second-round scenario and switch roles. Compare the scores you each earned as defender; the higher score wins. On equal scores, whoever found more changed labels while defending wins, then whoever spent fewer audit tokens; otherwise it is a draw. These tiebreakers are new, so tell us whether they felt fair.
+5. **Reveal and switch.** Discuss the changed labels and checks. Use the fresh second-round scenario and switch roles. Compare the scores you each earned as defender; the higher score wins. On equal scores, the player with less **poison left** wins: flipped labels never checked while they defended. Next, the player with fewer **clean audits** wins: checks of labels that were already correct. Otherwise it is a draw. These tiebreakers are new, so tell us whether they felt fair.
+
+**Quick answers**
+
+- The attacker may flip zero to four labels. The defender is not told how many.
+- Every check costs a token, even when the label was already correct. A card can be checked only once, and there is no fifth token.
+- The helper's hint is free and optional.
+- Your score depends only on the locked rule: the true rule scores 8/8 and any other rule 4/8. Unused tokens do not change it.
+- Poison left and clean audits come only from the round you defended. Holding back as attacker never helps you: it only leaves less poison for your opponent to miss.
 
 Ask your host whenever a rule is unclear. If comfortable, say what you are considering before making a choice. Honest confusion, unexpected tactics, and criticism are useful feedback.
 
@@ -55,7 +63,7 @@ Copy this section into a message and send it to the person who invited you. Shor
 - **Match seed, if available:** The helper prints this after the match.
 - **Approximate explanation time / playing time:**
 - **Defender scores:** Player A ___ / 8; Player B ___ / 8.
-- **If tied, poison found and tokens spent:** Player A ___ found, ___ spent; Player B ___ found, ___ spent. Did the tiebreak feel fair?
+- **If tied, poison left and clean audits:** Player A ___ left, ___ clean; Player B ___ left, ___ clean. Did the tiebreak feel fair?
 - **Clarity, 1–5:** 1 = very confusing; 5 = very clear. What caused confusion?
 - **Enjoyment, 1–5:** 1 = not enjoyable; 5 = very enjoyable. What drove your rating?
 - **Which choice felt most consequential?** Mention the role and card if you remember.

@@ -304,7 +304,9 @@ def round_one(edition: str = "seeded") -> str:
             + step(1, "poison", "Secret poisoning",
                    "<p>With the defender looking away, the attacker may turn over the tags of up to <b>four "
                    "different</b> training cards. Nothing else changes: no features, cards, references or test "
-                   "cards. The attack is finished before auditing starts.</p>")
+                   "cards. The attack is finished before auditing starts.</p>"
+                   "<p>Before this step, every tag follows the true rule exactly, so any tag that disagrees with "
+                   "it was flipped. The defender is not told how many.</p>")
             + step(2, "inspect", "Inspect the data",
                    "<p>The defender sees all 24 cards and their current tags. Count each rule’s errors on the "
                    "rule cards and announce the current winner. Looking, grouping and counting are free.</p>")
@@ -320,12 +322,13 @@ def round_two(edition: str = "seeded") -> str:
             + step(5, "score", "Reveal and score", SCORE_COPY[edition])
             + step(6, "switch", "Review and switch", SWITCH_COPY[edition])
             + '<h2>The fine print</h2><ul>'
-              "<li>A verified card cannot be audited again.</li>"
+              "<li>A verified card cannot be audited again, and there is no fifth token.</li>"
               "<li>An audit repairs only its own card. Identical-looking copies keep their tags until they are "
               "audited too.</li>"
               "<li>No free relabelling, deleting or adding cards in this version.</li>"
               "<li>The helper’s audit hints are suggestions from visible evidence, not proof of poisoning.</li>"
-              "<li>Tally as you go: an audit that changes a tag found poison; every audit spends a token.</li>"
+              "<li>Tally as you go: an audit that leaves its tag unchanged is a <b>clean audit</b>. At the "
+              "reveal, flipped tags with no VERIFIED token are <b>poison left</b>.</li>"
               "</ul>")
     return page(8, body)
 
@@ -334,12 +337,14 @@ def winning(edition: str = "seeded") -> str:
     report = nest(score_card(), 0, 0, 150)
     body = ('<div class="kicker">After two rounds</div><h1>Winning</h1>'
             "<p>Compare the scores the two players earned as <b>defender</b>. The higher score wins. If they "
-            "are equal, the player who found <b>more poisoned tags</b> as defender wins; if that is equal too, "
-            "the player who spent <b>fewer audit tokens</b> wins. Otherwise the match is a draw.</p>"
+            "are equal, the player with less <b>poison left</b> wins: flipped tags they never audited. If that "
+            "is equal too, the player with fewer <b>clean audits</b> wins: tokens spent on tags that were "
+            "already right. Otherwise the match is a draw. Count only the round each player defended.</p>"
             + fig(150, 210, report, "Deployment report score card")
             + '<p class="note">A wrong rule always scores 4/8 and the true rule 8/8, so half or more of simulated '
-              "matches tie on score; the tiebreakers settle about half of those ties. They decide only who wins the "
-              "match, never a round’s score, and they are still being playtested.</p>"
+              "matches tie on score; the tiebreakers settle most of those ties. Holding back as attacker never "
+              "helps you: it only leaves less poison for your opponent to miss. The tiebreakers decide only who "
+              "wins the match, never a round’s score, and they are still being playtested.</p>"
               "<h2>Why the test deck is separate</h2>"
               "<p>The robot is judged on new cargo it never trained on, just as a deployed system is. The "
               "test cards never join the training data, and their reference labels stay sealed until the rule "

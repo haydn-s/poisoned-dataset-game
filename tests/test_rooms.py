@@ -105,7 +105,28 @@ class RoomTests(unittest.TestCase):
             self.act(self.a, "audit", j)
         self.act(self.a, "lock")
         result = self.view()["round"]["result"]
-        self.assertEqual((result["found"], result["spent"]), (1, 4))
+        self.assertEqual({k: result[k] for k in ("found", "spent", "left", "clean")},
+                         {"found": 1, "spent": 4, "left": 1, "clean": 3})
+
+    def test_tiebreak_uses_poison_left_then_clean_audits(self):
+        self.start()
+        self.act(self.b, "attack", [0])  # one flip never switches a fixed deck's rule
+        self.act(self.a, "audit", 0)
+        self.act(self.a, "audit", 1)
+        self.act(self.a, "lock")
+        self.round_two()
+        self.act(self.a, "attack", [])  # holding back as the round-2 attacker
+        self.act(self.b, "lock")
+        v = self.view()
+        self.assertEqual([r["result"]["points"] for r in v["history"]], [8, 8])
+        # Neither defender left poison. A's clean audit decides it, where "more poison found" gave A the win.
+        self.assertEqual(v["outcome"], {"winner": "B", "decided_by": "clean"})
+        with self.store.connection() as db:  # a room finished before left/clean were stored
+            state = json.loads(db.execute("SELECT state FROM rooms WHERE code = ?", (self.code,)).fetchone()[0])
+            for round_ in state["rounds"]:
+                del round_["result"]["left"], round_["result"]["clean"]
+            db.execute("UPDATE rooms SET state = ? WHERE code = ?", (json.dumps(state), self.code))
+        self.assertEqual(self.view()["outcome"], v["outcome"])
 
     def test_two_round_match_roles_readiness_and_credential_free_export(self):
         self.start()
