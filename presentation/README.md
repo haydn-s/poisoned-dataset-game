@@ -41,9 +41,10 @@ The first command regenerates the HTML; the second prints the PDF; the third upd
 
 ## Fonts and printing
 
-The stylesheet requests Inter and Inter Display. The rendering machine uses system fallbacks, and the PDF embeds its fonts. If the installed fonts change, check the layout again.
+**Send [`poster.pdf`](poster.pdf) to the print shop.** It follows the Blurred Lens delivery format: one full-size PDF 1.4 page on a 24 × 36 inch sheet. This poster is landscape (36 inches wide × 24 inches high); Blurred Lens was portrait. Print at **actual size / 100%**, with no fit-to-page scaling or added margins. The PNG is a review preview, not the print file.
 
-- Confirm the printer's required size, bleed, and file settings. The header reaches the trim; this file has no added bleed.
-- Print a full-size section at 100% on Letter paper to check text and card-feature legibility.
-- Scan the QR from a full-size test print.
-- Keep the submitted PDF and printer's confirmation with the release materials.
+Like the Blurred Lens PDF, this file is the exact finished size, with no added bleed or crop marks. The background and header reach the page edges. Paper, finish, mounting, and other order details are selected separately with the shop.
+
+The stylesheet requests Inter and Inter Display. The rendering machine uses system fallbacks; all 87 PDF font resources are embedded or contain their own glyph drawings. Main text remains vector, and the PDF contains its images without requiring the HTML or image folder. If the installed fonts change, check the layout again.
+
+The print check verified one unencrypted 2592 × 1728 point page, included fonts, retained text, a clean PDF render, and a readable repository QR code. A physical proof can additionally confirm the shop's color and paper rendering.
