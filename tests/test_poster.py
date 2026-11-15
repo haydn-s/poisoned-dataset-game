@@ -42,6 +42,15 @@ class PosterTests(unittest.TestCase):
     def test_size_is_a_parameter(self):
         self.assertIn("size: 48in 36in", self.poster.build(48, 36))
 
+    def test_local_images_exist_and_author_is_set(self):
+        html = self.poster.build()
+        sources = re.findall(r'<img\b[^>]*\bsrc="([^"]+)"', html)
+        self.assertIn("images/game-room.jpg", sources)
+        self.assertIn("images/qr-repo.svg", sources)
+        for src in sources:
+            self.assertTrue((PRESENTATION / src).is_file(), src)
+        self.assertNotIn("[Author name]", html)
+
     def test_all_reused_svg_art_has_a_definition(self):
         html = self.poster.build()
         ids = set(re.findall(r'\bid="([^"]+)"', html))
