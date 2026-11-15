@@ -1,27 +1,25 @@
-"""Build the 36 x 24 in poster from the committed results and the game's own art.
+"""Build the 36 x 24 in game and teaching poster from the project's own art.
 
-Run from the repository root:  python3 presentation/poster.py
-Every number and figure is computed from results/evaluation-v1.0, so the poster
-cannot drift from the evaluation.
+Run from the repository root: python3 presentation/poster.py
+The small simulation panel reads frozen evaluation results; classroom activities
+are proposed uses, not claims of measured learning gains.
 """
 
 import argparse
 import json
 import sys
-from collections import defaultdict
+from decimal import Decimal, ROUND_HALF_UP
 from html import escape
 from pathlib import Path
-from statistics import mean
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT))
 
-from poisoned_dataset import art, edition, report  # noqa: E402
+from poisoned_dataset import art  # noqa: E402
 from poisoned_dataset.art import C, INK  # noqa: E402
-from poisoned_dataset.components import cargo_card, role_card, rule_card  # noqa: E402
-from poisoned_dataset.core import LABELS, RULES, Card, flip_labels, generate  # noqa: E402
-from poisoned_dataset.report import PRIMARY, label, marker  # noqa: E402
+from poisoned_dataset.components import cargo_card  # noqa: E402
+from poisoned_dataset.core import Card  # noqa: E402
 
 RESULTS = ROOT / "results" / "evaluation-v1.0"
 AUTHOR = "D. Haydn Stucker"
@@ -31,348 +29,252 @@ URL = "github.com/haydn-s/poisoned-dataset-game"
 STYLE = """
 @page { size: WIDTHin HEIGHTin; margin: 0; }
 * { box-sizing: border-box; }
-body { margin: 0; background: #8a8178; color: #2a1c14; font-family: 'Inter', system-ui, sans-serif; }
-.poster { width: WIDTHin; height: HEIGHTin; position: relative; overflow: hidden; background: #f3e8d0;
-          margin: 0 auto; }
+body { margin: 0; color: #2a1c14; font-family: 'Inter', system-ui, sans-serif; background: #8a8178; }
+.poster { position: relative; width: WIDTHin; height: HEIGHTin; overflow: hidden; margin: 0 auto; background: #f3e8d0; }
 .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; }
-header { position: absolute; left: 0; right: 0; top: 0; height: 4.5in; }
-header .scene { position: absolute; right: 0; top: 0; width: 6.75in; height: 4.5in; }
-header .logo { position: absolute; left: .55in; top: .3in; width: 8.7in; }
-header .titles { position: absolute; left: 9.75in; right: 7.25in; top: .45in; }
-h1 { font: 900 56pt/1.05 'Inter Display', 'Inter', sans-serif; margin: 0 0 .18in; text-wrap: balance; }
-.byline { font: 600 26pt/1.3 'Inter', sans-serif; margin: 0; }
-.byline b { font-weight: 800; }
-.columns { position: absolute; left: .55in; right: .55in; top: 4.85in; bottom: .95in; display: grid;
-           grid-template-columns: repeat(4, 1fr); gap: .45in; }
+header { position: absolute; inset: 0 0 auto; height: 3.7in; }
+header .logo { position: absolute; left: .55in; top: .2in; width: 8in; }
+header .scene { position: absolute; right: 0; top: 0; width: 5.55in; height: 3.7in; }
+header .titles { position: absolute; left: 9.25in; right: 5.85in; top: .43in; }
+h1 { font: 900 57pt/1.04 'Inter Display', 'Inter', sans-serif; margin: 0 0 .15in; }
+.subtitle { font: 650 30pt/1.2 'Inter', sans-serif; margin: 0 0 .18in; }
+.byline { font: 600 23pt/1.2 'Inter', sans-serif; margin: 0; }
+.columns { position: absolute; left: .55in; right: .55in; top: 4.05in; bottom: 1.15in;
+           display: grid; grid-template-columns: 1fr 1.14fr 1fr; gap: .42in; }
 .col { display: flex; flex-direction: column; gap: .3in; min-height: 0; }
-.col > section:last-child { flex: 1; }
-section { background: #fffaf0; border: 4px solid #2a1c14; border-radius: .22in; padding: .25in .32in; }
-h2 { font: 900 38pt/1.1 'Inter Display', 'Inter', sans-serif; margin: 0 0 .12in; }
-h2 .n { display: inline-block; width: .62in; height: .62in; border-radius: 50%; background: #e2ad35;
-        border: 3px solid #2a1c14; text-align: center; font-size: 30pt; line-height: .56in; margin-right: .12in; }
-h3 { font: 800 26pt/1.2 'Inter Display', 'Inter', sans-serif; margin: .14in 0 .06in; }
-p, li, td, th { font-size: 21pt; line-height: 1.3; }
-p { margin: 0 0 .1in; }
-ul { margin: 0; padding-left: .38in; }
-li { margin-bottom: .05in; }
-.lead { font-size: 25pt; font-weight: 600; }
-.small { font-size: 17pt; line-height: 1.3; }
-.hero { display: flex; align-items: baseline; gap: .2in; margin: .05in 0 .08in; }
-.hero b { font: 900 104pt/1 'Inter Display', 'Inter', sans-serif; }
-.hero span { font: 700 25pt/1.2 'Inter', sans-serif; }
-.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .16in; margin: .12in 0 .06in; }
-.tile { border: 3px solid #2a1c14; border-radius: .14in; padding: .12in .14in; background: #f3e8d0; }
-.tile b { display: block; font: 900 31pt/1.05 'Inter Display', 'Inter', sans-serif; white-space: nowrap; }
-.tile span { font-size: 17pt; line-height: 1.25; display: block; margin-top: .05in; }
-table { border-collapse: collapse; width: 100%; margin: .06in 0; }
-th, td { text-align: left; padding: .05in .08in; border-bottom: 2px solid #c9b48a; vertical-align: top; }
-th { font-weight: 800; }
-td.num, th.num { text-align: right; }
-figure { margin: .06in 0; }
-figure img, figure svg { display: block; width: 100%; height: auto; }
-figcaption { font-size: 17pt; line-height: 1.3; margin-top: .06in; }
-.strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: .1in; text-align: center; }
-.strip svg { width: 100%; height: auto; }
-.strip span { font-size: 15pt; font-weight: 700; line-height: 1.2; display: block; margin-top: .04in; }
-.cards3 { width: 94%; margin: 0 auto .1in; }
-.printed { width: 72%; margin: 0 auto .14in; }
-code { font: 600 18pt 'JetBrains Mono', monospace; }
-.shot img { border: 3px solid #2a1c14; border-radius: .1in; }
-.qrrow { display: flex; gap: .25in; align-items: center; margin: .06in 0 .12in; }
-.qrrow img { width: 1.8in; height: 1.8in; flex: none; border: 3px solid #2a1c14; border-radius: .08in; }
-.qrrow .url { margin: 0 0 .08in; }
-.ways { list-style: none; padding: 0; }
-.ways li { margin-bottom: .07in; }
-.takeaway { font-size: 22pt; font-weight: 600; line-height: 1.28; margin-bottom: .14in; }
-.refs { font-size: 14pt; line-height: 1.3; margin: 0; }
-.url { font: 900 27pt/1.2 'Inter Display', 'Inter', sans-serif; margin: .04in 0 .1in; }
-footer { position: absolute; left: .55in; right: .55in; bottom: .3in; display: flex; justify-content: space-between;
-         font: 700 16pt 'Inter', sans-serif; letter-spacing: .06em; }
+.col > :last-child { flex: 1; }
+section, aside { background: #fffaf0; border: 4px solid #2a1c14; border-radius: .22in; padding: .3in .34in; }
+h2 { font: 900 38pt/1.08 'Inter Display', 'Inter', sans-serif; margin: 0 0 .18in; }
+h3 { font: 800 27pt/1.15 'Inter', sans-serif; margin: 0 0 .06in; }
+p, li { font-size: 23pt; line-height: 1.3; margin: 0; }
+p + p { margin-top: .12in; }
+.lead { font-size: 25pt; line-height: 1.26; }
+.small { font-size: 19pt; line-height: 1.28; }
+.kicker { font: 800 18pt/1.1 'Inter', sans-serif; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 .12in; }
+.roles { display: grid; grid-template-columns: 1fr 1fr; gap: .22in; margin: .18in 0; }
+.role { border: 2px solid #c9b48a; border-radius: .14in; padding: .12in .18in .18in; background: #f3e8d0; text-align: center; }
+.role > svg { display: block; height: 2.4in; width: 100%; }
+.role h3 { font-size: 29pt; }
+.role p { font-size: 21pt; line-height: 1.22; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid #c9b48a; padding-top: .15in; gap: .16in; }
+.facts b { font: 900 34pt/1 'Inter', sans-serif; display: block; }
+.facts span { font-size: 20pt; display: block; margin-top: .05in; }
+.steps { list-style: none; margin: .08in 0 0; padding: 0; display: flex; flex-direction: column; gap: .17in; }
+.steps li { display: grid; grid-template-columns: .65in 1fr; gap: .18in; }
+.step-number { width: .62in; height: .62in; border: 2px solid #2a1c14; border-radius: 50%; background: #e2ad35;
+               font: 900 28pt/.57in 'Inter', sans-serif; text-align: center; }
+.steps h3 { font-size: 28pt; }
+.steps p { font-size: 22pt; }
+.round { display: flex; flex-direction: column; }
+.round .rule-note { margin-top: auto; padding-top: .24in; }
+.rule-note { font-size: 21pt; line-height: 1.28; }
+.rule-note b { color: #346e60; }
+.tabletop { background: #153e35; color: #fff7e5; padding: .3in .36in; }
+.tabletop .kicker { color: #edc36c; }
+.tabletop h2 { font-size: 41pt; }
+.tabletop .lead { font-size: 24pt; }
+.example-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: .2in; margin: .32in .12in .25in; }
+.example-cards > div > svg { display: block; width: 100%; height: auto; }
+.example-cards > div:nth-child(1) { transform: rotate(-3deg); }
+.example-cards > div:nth-child(3) { transform: rotate(3deg); }
+.audit-budget { display: flex; align-items: center; gap: .22in; margin: .14in 0 .18in; }
+.tokens { display: flex; gap: .08in; flex: none; }
+.tokens > svg { width: .72in; height: .82in; }
+.audit-budget p { font-size: 23pt; line-height: 1.22; }
+.discussion { border-top: 2px solid #e6d4ac66; padding-top: .16in; font-size: 23pt; }
+.model { display: flex; flex-direction: column; }
+.rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: .16in; margin: .16in 0; }
+.rule { background: #f3e8d0; border: 2px solid #c9b48a; border-radius: .12in; padding: .15in; }
+.rule b { display: block; font: 900 28pt/1.1 'Inter', sans-serif; }
+.rule span { display: block; font-size: 19pt; line-height: 1.2; margin-top: .06in; }
+figure { margin: .16in 0 0; }
+.shot-crop { position: relative; width: 100%; aspect-ratio: 5.7; overflow: hidden;
+             border: 3px solid #2a1c14; border-radius: .1in; background: #16342b; }
+.shot-crop img { position: absolute; width: 160%; max-width: none; left: -9.5%; top: -107%; }
+figcaption { font-size: 18pt; line-height: 1.25; margin-top: .1in; }
+.model .key-point { margin-top: auto; padding-top: .18in; font-size: 23pt; font-weight: 650; }
+.objectives { display: grid; gap: .18in; }
+.objectives > div { border-left: 6px solid #e2ad35; padding-left: .16in; }
+.objectives h3 { font-size: 26pt; }
+.objectives p { font-size: 22pt; }
+.lesson { background: #f6edda; }
+.lesson > p { font-size: 21pt; }
+.lesson ol { margin: .16in 0 .16in; padding-left: .35in; }
+.lesson li { font-size: 21pt; margin: 0 0 .12in; padding-left: .04in; }
+.lesson .debrief { border-top: 2px solid #c9b48a; padding-top: .12in; font-size: 21pt; font-weight: 600; }
+.evidence { border-color: #9d8b66; background: #efe7d5; }
+.evidence h2 { font-size: 25pt; margin-bottom: .12in; }
+.evidence p { font-size: 18pt; line-height: 1.25; }
+.evidence .scope { margin-top: .12in; font-weight: 700; }
+.access h2 { font-size: 31pt; }
+.qrrow { display: flex; align-items: center; gap: .22in; }
+.qrrow img { width: 1.6in; height: 1.6in; flex: none; }
+.url { font: 900 25pt/1.16 'Inter', sans-serif; margin-bottom: .1in; }
+.access .small { font-size: 19pt; }
+footer { position: absolute; left: .55in; right: .55in; bottom: .24in; }
+footer .line { display: flex; justify-content: space-between; font: 800 16pt/1.2 'Inter', sans-serif; margin-bottom: .12in; }
+footer .refs { font: 400 13pt/1.25 'Inter', sans-serif; }
 @media print { body { background: none; } }
 """
 
 
-def svg(view: str, body: str, label: str) -> str:
-    return f'<svg viewBox="{view}" role="img" aria-label="{escape(label)}">{body}</svg>'
+def svg(view: str, body: str, description: str) -> str:
+    return f'<svg viewBox="{view}" role="img" aria-label="{escape(description)}">{body}</svg>'
 
 
-def card_svg(card_markup: str) -> str:
-    """Re-wrap a 250 x 350 card so CSS sizes it freely."""
-    return card_markup.replace('<svg class="card"', '<svg', 1)
+def labeled_card(card: Card, tag: str) -> str:
+    """Show a real cargo card with its separate label tag in the tag slot."""
+    markup = cargo_card(card, 1, chip=("EXAMPLE", C["mustard"], INK)).replace('<svg class="card"', '<svg', 1)
+    overlay = f'<g transform="translate(45 270)">{art.tag(tag, 160, 55, f"poster-{card.id}")}</g>'
+    return markup.rsplit("</svg>", 1)[0] + overlay + "</svg>"
 
 
-def local_figure(name: str, caption: str, alt: str) -> str:
-    return (f'<figure><img src="figures/{name}" alt="{escape(alt)}"><figcaption>{escape(caption)}</figcaption>'
-            "</figure>")
+def role_scene(attacker: bool) -> str:
+    if attacker:
+        body = f'<g transform="translate(45 32) scale(.65)">{art.mallory("poster-role")}</g>'
+    else:
+        body = f'<g transform="translate(30 44) scale(.85)">{art.sorter("poster-role")}</g>'
+    return svg("0 0 220 220", body, "Mallory, the attacker" if attacker else "Sorter, the defender’s robot")
 
 
-def primary_accuracy(runs: list[dict]) -> str:
-    """One large panel: mean final accuracy against the attack ceiling in the primary condition, four audits."""
-    means = defaultdict(list)
-    for r in runs:
-        if (r["regime"], r["attack"], r["audit_budget"]) == (PRIMARY["regime"], PRIMARY["attack"], 4):
-            means[(r["attack_budget"], r["defense"])].append(float(r["final_accuracy"]))
-    budgets = sorted({k for k, _ in means})
-    x0, y0, w, h = 46, 54, 270, 236
-    xmap = lambda k: x0 + budgets.index(k) * w / (len(budgets) - 1)
-    ymap = lambda v: y0 + h - (v - .5) / .5 * h
-    body = []
-    for v in (.5, .6, .7, .8, .9, 1.0):
-        body.append(f'<path class="grid" d="M{x0} {ymap(v):.1f}H{x0 + w}" stroke-width="1"/>'
-                    + label(x0 - 7, ymap(v) + 4, f"{v:.1f}", "muted", 11, "end"))
-    for k in budgets:
-        body.append(label(xmap(k), y0 + h + 17, str(k), "muted", 11, "middle"))
-    body.append(label(x0 + w / 2, y0 + h + 34, "Attack ceiling (flips)", "ink2", 11, "middle"))
-    body.append(f'<path class="l-clean" d="M{x0} {ymap(1):.1f}H{x0 + w}" stroke-width="1" stroke-dasharray="3 3"/>')
-    placed = []
-    for key, name in report.DEFENSES:
-        pts = [(xmap(k), ymap(mean(means[(k, key)])), k, mean(means[(k, key)])) for k in budgets]
-        body.append(f'<polyline class="l-{key}" points="{" ".join(f"{x:.1f},{y:.1f}" for x, y, _, _ in pts)}" '
-                    f'stroke-width="2" stroke-linejoin="round"/>')
-        body.extend(marker(key, x, y, f"{name}, k = {k}: {v:.3f}") for x, y, k, v in pts)
-        x, y, _, v = pts[-1]
-        if all(abs(y - other) >= 13 for other in placed):
-            placed.append(y)
-            body.append(label(x + 9, y + 4, f"{name.split()[0]} {v:.2f}", "ink2", 11))
-    for n, (key, name) in enumerate(report.DEFENSES):
-        lx = 46 + n * 104
-        body.append(f'<path class="l-{key}" d="M{lx} 22h18" stroke-width="2"/>' + marker(key, lx + 9, 22, name)
-                    + label(lx + 24, 26, name, "ink2", 11))
-    body.append('<path class="l-clean" d="M358 22h18" stroke-width="1" stroke-dasharray="3 3"/>'
-                + label(380, 26, "Clean", "ink2", 11))
-    return report.svg(420, 336, "".join(body), "Final accuracy against attack ceiling, correlated decks, "
-                                                  "directed attack, four audits")
-
-
-def conditions(comparisons: list[dict]) -> str:
-    """Conflict minus random, k = 4 and a = 4, for all four regime and attack conditions."""
-    x0, w = 150, 220
-    xmap = lambda v: x0 + (v + 5) / 30 * w
-    body = [label(x0 + w / 2, 186, "Conflict minus random, accuracy points", "ink2", 11, "middle")]
-    for v in (-5, 0, 5, 10, 15, 20, 25):
-        body.append(f'<path class="{"axis" if v == 0 else "grid"}" d="M{xmap(v):.1f} 14V160" stroke-width="1"/>'
-                    + label(xmap(v), 174, f"{v:+d}" if v else "0", "muted", 11, "middle"))
-    for n, (regime, attack) in enumerate(report.PANELS):
-        c = report.cell(comparisons, regime=regime, attack=attack, attack_budget=4, audit_budget=4)[0]
-        m, lo, hi = (100 * float(c[k]) for k in ("mean_conflict_minus_random", "ci95_low", "ci95_high"))
-        y = 32 + n * 38
-        primary = (regime, attack) == (PRIMARY["regime"], PRIMARY["attack"])
-        body.append(label(x0 - 10, y + 4, f"{regime} · {attack}", "ink" if primary else "ink2", 11, "end",
-                          700 if primary else 400)
-                    + f'<path class="l-conflict" d="M{xmap(lo):.1f} {y}H{xmap(hi):.1f}" stroke-width="2.5" '
-                      f'stroke-linecap="round"/>'
-                    + marker("conflict", xmap(m), y, f"{regime} {attack}: {m:+.1f} ({lo:+.1f} to {hi:+.1f})")
-                    + label(xmap(hi) + 8, y + 4, f"{m:+.1f}", "ink2", 11))
-    return report.svg(420, 196, "".join(body), "Conflict minus random accuracy by condition at four flips and "
-                                                  "four audits, with 95% intervals")
-
-
-def failure_case(runs: list[dict], seed: int) -> str:
-    """The poisoned cards and both audit sequences for the traced seed, sized for the poster."""
-    d = report.by_seed(report.cell(runs, **PRIMARY))[seed]
-    scenario = generate(seed, regime=PRIMARY["regime"])
-    flipped = d["none"]["flipped_cards"].split(";")
-    by_id = {c.id: c for c in scenario.cards}
-    index = {c.id: i for i, c in enumerate(scenario.cards)}
-    supplied = flip_labels(scenario.clean_labels, [index[x] for x in flipped])
-    chip = lambda x, y, cid, cls="chip", extra="": (
-        f'<rect class="{cls}" x="{x}" y="{y}" width="90" height="22" rx="4" {extra}/>'
-        + label(x + 26, y + 15.5, f"{cid} {LABELS[supplied[index[cid]]]}", "ink", 10.5))
-    body = [label(10, 22, f"Flipped by the attacker (true rule: {scenario.true_rule})", "ink", 12, weight=700)]
-    for n, cid in enumerate(flipped):
-        x = 10 + n * 98
-        c = by_id[cid]
-        body.append(chip(x, 32, cid, "chip flip", 'stroke-width="2"')
-                    + f'<g transform="translate({x + 12} {43})">{art.cargo_icon(*c.features, 16)}</g>')
-    rows = (("conflict", "Conflict audit", 76), ("random", "Random audit", 136))
-    for key, name, y in rows:
-        trace = json.loads(d[key]["audit_trace"])
-        final = d[key]["final_rule"]
-        body.append(label(10, y, f"{name}: learned {final}"
-                                 f"{' (wrong)' if final != scenario.true_rule else ' (restored)'}", "ink", 12, weight=700))
-        for n, t in enumerate(trace):
-            cid = scenario.cards[t["index"]].id
-            x = 10 + n * 98
-            found = t["before"] != t["after"]
-            body.append(f'<rect class="chip{" flip" if found else ""}" x="{x}" y="{y + 10}" width="90" height="22" '
-                        f'rx="4" stroke-width="{2 if found else 0}"/>'
-                        + f'<g transform="translate({x + 12} {y + 21})">{art.cargo_icon(*by_id[cid].features, 16)}</g>'
-                        + label(x + 26, y + 25.5, f"{n + 1}. {cid}", "ink", 11)
-                        + label(x + 45, y + 46, "found flip" if found else "was right", "ink2", 10, "middle"))
-    return report.svg(410, 196, "".join(body), f"Failure case, seed {seed}")
-
-
-def figures() -> dict[str, str]:
-    runs, comparisons = report.load(RESULTS)
-    seed = json.loads((RESULTS / "report" / "headline.json").read_text())["trace_seed"]
-    return {"primary-accuracy.svg": primary_accuracy(runs), "conditions.svg": conditions(comparisons),
-            "failure-case.svg": failure_case(runs, seed)}
-
-
-def loop_strip() -> str:
-    steps = [
-        ("Poison: flip up to 4 tags", svg("0 0 250 350", f'<g transform="translate(44 70) scale(.78)">{art.mallory("pp")}</g>', "Mallory")),
-        ("Inspect: count errors", card_svg(cargo_card(Card("C07", 1, 1, 1), 1))),
-        ("Audit: up to 4 tokens", svg("0 0 250 350", f'<g transform="translate(125 115)">{art.hexbolt("AUDIT", 85, 1)}</g>'
-                                     f'<g transform="translate(125 270)">{art.hexbolt("VERIFIED", 70)}</g>',
-                      "Audit token flipping to verified")),
-        ("Lock: fewest errors", card_svg(rule_card(0, RULES[0]))),
-        ("Deploy: 8 new cargo", card_svg(cargo_card(Card("T08", 1, 1, 1), 1, True))),
-    ]
-    return "".join(f"<div>{s}<span>{escape(t)}</span></div>" for t, s in steps)
-
-
-def printed_cards() -> list[str]:
-    deck_a = ("DECK A", *edition.DECK_TONE["A"])
-    return [card_svg(cargo_card(Card("A07", 1, 0, 1), 0, chip=deck_a)), card_svg(edition.reference_back((1, 0, 1))),
-            card_svg(edition.reference_front((1, 0, 1), 1)), card_svg(edition.truth_back()),
-            card_svg(role_card("ATTACKER", edition.ATTACKER))]
+def percentage(value: float) -> str:
+    return f'{(Decimal(str(value)) * 100).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)}%'
 
 
 def build(width: float = 36, height: float = 24) -> str:
-    h = json.loads((RESULTS / "report" / "headline.json").read_text())
-    meta = json.loads((RESULTS / "metadata.json").read_text())
-    d, p, split = h["defenses"], h["paired_difference"], h["exploratory_by_visible_conflict"]
-    switched = h["attack_switched_rule"]
-    pct = lambda n, k: f"{round(100 * n / k)}%"
-    vis, hid = split["visible"], split["hidden"]
+    headline = json.loads((RESULTS / "report" / "headline.json").read_text())
+    paired, defenses = headline["paired_difference"], headline["defenses"]
 
-    header = (f'<header><svg class="backdrop" viewBox="0 0 3600 500" preserveAspectRatio="none" aria-hidden="true">'
-              f'<rect width="3600" height="500" fill="url(#shop)"/>'
-              f'<path d="M0 470H3600V500H0Z" fill="{C["mustard"]}"/>'
-              + art.hatch(art.poly((0, 470), (3600, 470), (3600, 500), (0, 500)), INK, 30, 15, 45, "band")
-              + f'</svg><svg class="scene" viewBox="0 0 900 600" role="img" aria-label="Key art: Mallory and the '
-                f'sorter robot in the moon-colony warehouse">{art.cover_scene("poster")}</svg>'
-                f'<svg class="logo" viewBox="0 0 660 270" role="img" aria-label="Poisoned Dataset">{art.logo()}</svg>'
-                f'<div class="titles"><h1>Who changed the labels? A tabletop game and a paired simulation of '
-                f'label poisoning under scarce audits</h1>'
-                f'<p class="byline"><b>{escape(AUTHOR)}</b> · {escape(COURSE)}</p></div></header>')
+    header = (
+        '<header><svg class="backdrop" viewBox="0 0 3600 500" preserveAspectRatio="none" aria-hidden="true">'
+        '<rect width="3600" height="500" fill="url(#shop)"/>'
+        f'<path d="M0 470H3600V500H0Z" fill="{C["mustard"]}"/>'
+        + art.hatch(art.poly((0, 470), (3600, 470), (3600, 500), (0, 500)), INK, 30, 15, 45, "band")
+        + '</svg><svg class="scene" viewBox="0 0 900 600" role="img" aria-label="Robots in a moon-colony warehouse">'
+        + art.cover_scene("poster") + '</svg>'
+        + f'<svg class="logo" viewBox="0 0 660 270" role="img" aria-label="Poisoned Dataset">{art.logo()}</svg>'
+        + '<div class="titles"><h1>Play the attack.<br>Explain the defense.</h1>'
+        '<p class="subtitle">A hands-on game for teaching data poisoning &amp; explainable AI</p>'
+        f'<p class="byline"><b>{escape(AUTHOR)}</b> · {escape(COURSE)}</p></div></header>'
+    )
 
-    threat = (("Attacker knows", "Clean labels, true rule, candidate rules, tie order"),
-              ("Attacker can", "Flip at most k labels, once, before any audit"),
-              ("Defender sees", "Features and current labels; buys trusted labels"),
-              ("Trusted oracle", "Always right; one card per token"),
-              ("Test deck", "8 fresh records, kept out of training and audits"))
+    roles = (
+        '<div class="roles"><div class="role">' + role_scene(True)
+        + '<h3>Attacker</h3><p>Secretly change labels.<br>Teach the robot the wrong rule.</p></div>'
+        '<div class="role">' + role_scene(False)
+        + '<h3>Defender</h3><p>Choose which labels to verify.<br>Protect the robot’s training data.</p></div></div>'
+    )
+    steps = (
+        ("Poison", "The attacker knows the truth and flips up to four labels before the defender looks."),
+        ("Inspect", "Compare cargo features, current labels and each rule’s error count. Looking is free."),
+        ("Audit", "Spend one of four tokens to reveal and repair one card’s label. Recount the errors."),
+        ("Lock & test", "Lock the lowest-error rule, then score its predictions on eight unseen cargo cards."),
+        ("Reveal & swap", "Explain the result, switch roles and play a second round. Compare defender scores."),
+    )
+    step_list = ''.join(
+        f'<li><span class="step-number">{number}</span><div><h3>{escape(title)}</h3><p>{escape(text)}</p></div></li>'
+        for number, (title, text) in enumerate(steps, 1)
+    )
     col1 = (
-        '<section><h2><span class="n">1</span>The question</h2>'
-        '<p class="lead">With only four trusted checks, does auditing <b>conflicting look-alike labels</b> '
-        "protect a learner better than checking at random?</p>"
-        "<p>If someone can change training labels, a model can learn a rule that fits its data and fails in use. "
-        "Checking every label costs too much, so defenders choose which few to verify. Changing labels before "
-        "training is a poisoning attack in NIST’s adversarial ML taxonomy.</p></section>"
-        '<section><h2><span class="n">2</span>The game</h2>'
-        "<p>Two players, two rounds, roles swap. Cargo cards show public features; labels are separate "
-        "hang-tags that the attacker may flip.</p>"
-        f'<div class="strip">{loop_strip()}</div>'
-        "<p class='small'>Ties between rules go red, then round, then striped. Each player defends once. "
-        "Higher deployment score wins; tied matches go to less poison left unaudited, then fewer clean "
-        "audits.</p></section>"
-        '<section><h2><span class="n">3</span>The learner</h2>'
-        f'<div class="strip cards3" style="grid-template-columns:repeat(3,1fr)">'
-        f'{"".join(f"<div>{card_svg(rule_card(i, r))}</div>" for i, r in enumerate(RULES))}</div>'
-        "<p>The robot learns one rule: the one with the <b>fewest errors</b> against the current tags. "
-        "A wrong rule scores 4/8 on the deployment deck, the true rule 8/8.</p></section>")
+        '<section><p class="kicker">The game</p><h2>Two players. One robot.<br>A question of trust.</h2>'
+        '<p class="lead">Rival crews train a moon-colony supply robot. One sabotages its data; '
+        'the other has just four checks to defend it.</p>'
+        + roles
+        + '<div class="facts"><div><b>2</b><span>players</span></div><div><b>2</b><span>rounds; swap roles</span></div>'
+        '<div><b>24</b><span>training cards / round</span></div></div></section>'
+        '<section class="round"><h2>How a round unfolds</h2>'
+        f'<ol class="steps">{step_list}</ol>'
+        '<p class="rule-note"><b>Every check costs a token.</b> It verifies only the chosen card, '
+        'even when several cards look identical.</p></section>'
+    )
 
+    examples = (
+        (Card("A", 1, 0, 0), "STORE"),
+        (Card("B", 1, 0, 0), "RECYCLE"),
+        (Card("C", 0, 1, 1), "STORE"),
+    )
+    hand = ''.join(f'<div>{labeled_card(card, tag)}</div>' for card, tag in examples)
+    tokens = ''.join(svg("0 0 90 100", f'<g transform="translate(45 50)">{art.hexbolt("AUDIT", 43, i)}</g>',
+                         f"Audit token {i}") for i in range(1, 5))
+    rules = ''.join(f'<div class="rule"><b>{name}</b><span>STORE if {name.lower()};<br>otherwise RECYCLE</span></div>'
+                    for name in ("RED", "ROUND", "STRIPED"))
     col2 = (
-        '<section><h2><span class="n">4</span>Threat model</h2><table>'
-        + "".join(f"<tr><th>{escape(a)}</th><td>{escape(b)}</td></tr>" for a, b in threat)
-        + "</table></section>"
-        '<section><h3>Two audit policies</h3><ul>'
-        "<li><b>Random:</b> check any unchecked card.</li>"
-        "<li><b>Conflict:</b> check a card whose identical look-alikes carry the other label, contradictions "
-        "of verified cards first; recompute after each check.</li></ul>"
-        '<h3>Method</h3>'
-        f"<p>Protocol v{meta['protocol']} frozen before the run: {len(meta['seeds'])} main seeds × 2 regimes × "
-        f"2 attacks × 5 flip budgets × 3 audit budgets = {meta['rows']:,} runs, each policy facing the same "
-        f"poisoned labels. 95% percentile bootstrap over seeds.</p>"
-        "</section>"
-        '<section><h3>On the table and online</h3>'
-        f'<div class="strip printed">{"".join(f"<div>{s}</div>" for s in printed_cards())}</div>'
-        '<figure class="shot"><img src="images/game-room.jpg" alt="The online game room during an audit: '
-        'rule error counts, the cargo table and the defender\'s audit tokens">'
-        "<figcaption>A fixed-deck print edition with no per-game printing, and an online room: two "
-        "devices, secrets kept by role, playtests logged.</figcaption></figure></section>")
+        '<section class="tabletop"><p class="kicker">Try a decision</p><h2>Which label would you check?</h2>'
+        '<p class="lead">Three example cards from a 24-card training deck.</p>'
+        f'<div class="example-cards">{hand}</div>'
+        f'<div class="audit-budget"><div class="tokens">{tokens}</div>'
+        '<p><b>Four checks.</b> One trusted label per token.<br>Explain your choice before the reveal.</p></div>'
+        '<p class="discussion">A and B have identical features but different labels. '
+        '<b>At least one is wrong. What evidence would tell you which?</b></p></section>'
+        '<section class="model"><h2>Make the robot’s reasoning visible</h2>'
+        '<p>The robot chooses from three simple rules. Count each rule’s mistakes against the current labels; '
+        '<b>the rule with the fewest errors wins.</b></p>'
+        f'<div class="rules">{rules}</div>'
+        '<figure><div class="shot-crop"><img src="images/game-room.jpg" '
+        'alt="Online game showing the RED, ROUND and STRIPED rule-error counts and the selected rule">'
+        '</div><figcaption>The online game updates error counts after each audit. '
+        'The printed edition makes the same process tangible with cards, tags and tokens.</figcaption></figure>'
+        '<p class="key-point">Did fixing that label change the winning rule? '
+        'Use the error counts to explain why.</p></section>'
+    )
 
+    objectives = (
+        ("Data integrity", "Changing labels can change what the robot learns, even when the cargo stays the same."),
+        ("Explainability", "Visible rules and error counts let players trace why the robot chooses a rule."),
+        ("Limited oversight", "Four checks force players to justify where they spend their verification budget."),
+        ("Generalization", "Testing on unseen cargo separates fitting the training labels from getting the task right."),
+    )
+    objectives_html = ''.join(f'<div><h3>{escape(title)}</h3><p>{escape(text)}</p></div>' for title, text in objectives)
     col3 = (
-        '<section><h2><span class="n">5</span>Results</h2>'
-        f'<div class="hero"><b>+{100 * p["mean"]:.1f}</b><span>points of deployment accuracy, conflict over '
-        f"random auditing</span></div>"
-        f"<p class='small'>95% CI {100 * p['ci95'][0]:+.1f} to {100 * p['ci95'][1]:+.1f} · primary cell: correlated "
-        f"decks, directed attack, 4 flips, 4 audits, {h['n_seeds']} seeds</p>"
-        f'<div class="tiles"><div class="tile"><b>{d["conflict"]["restored_true_rule"]} vs '
-        f'{d["random"]["restored_true_rule"]}</b><span>of {switched} poisoned rounds restored, conflict vs '
-        f'random</span></div>'
-        f'<div class="tile"><b>{d["conflict"]["corruption_found_per_seed"]:.2f} vs '
-        f'{d["random"]["corruption_found_per_seed"]:.2f}</b><span>poisoned labels found per four audits</span></div>'
-        f'<div class="tile"><b>{p["wins"]} · {p["ties"]} · {p["losses"]}</b><span>seeds won, tied and lost by '
-        f"conflict auditing</span></div></div>"
-        + local_figure("primary-accuracy.svg", "Correlated decks, directed attack, four audits: once any labels are "
-                       "flipped, conflict auditing keeps the highest accuracy.", "Final accuracy against attack ceiling")
-        + local_figure("conditions.svg", "With 4 flips and 4 audits, the mean difference is never negative; the "
-                       "edge is largest where the attack bites hardest.", "Paired difference by condition")
-        + "</section>")
+        '<section><p class="kicker">Teaching opportunities</p><h2>What players can explore</h2>'
+        f'<div class="objectives">{objectives_html}</div></section>'
+        '<section class="lesson"><h2>Bring it into a lesson</h2>'
+        '<p><b>Suggested session:</b> about 30 minutes for introduction, play and discussion. '
+        'Designed for learners new to machine learning.</p>'
+        '<ol><li><b>Introduce:</b> separate features, labels and predictions with one cargo card.</li>'
+        '<li><b>Play &amp; swap:</b> ask each player to explain an audit choice before the reveal.</li>'
+        '<li><b>Debrief:</b> trace how a changed label affected the selected rule.</li></ol>'
+        '<p class="debrief">Discussion challenge: could every look-alike label agree and still be wrong?</p></section>'
+        '<aside class="evidence"><h2>Supporting evidence: simulation</h2>'
+        f'<p>In {headline["n_seeds"]} paired simulated decks, checking conflicting labels reached '
+        f'<b>{percentage(defenses["conflict"]["final_accuracy"])}</b> accuracy versus '
+        f'<b>{percentage(defenses["random"]["final_accuracy"])}</b> for random checks '
+        f'(+{100 * paired["mean"]:.1f} percentage points; 95% CI '
+        f'{100 * paired["ci95"][0]:+.1f} to {100 * paired["ci95"][1]:+.1f}).</p>'
+        '<p>Correlated decks, directed attacks, up to four flips and four audits. '
+        'Consistently poisoned groups can hide the disagreement signal.</p>'
+        '<p class="scope">These are automated policies. Learning gains and classroom timing have not been measured.</p></aside>'
+        '<section class="access"><h2>Play it. Teach with it.</h2><div class="qrrow">'
+        f'<img src="images/qr-repo.svg" alt="QR code for {escape(URL)}"><div>'
+        f'<p class="url">github.com/haydn-s/<br>poisoned-dataset-game</p>'
+        '<p class="small">Print kit · online setup<br>Playtest guide · code &amp; results</p></div></div></section>'
+    )
 
-    col4 = (
-        '<section><h2><span class="n">6</span>Where it fails</h2>'
-        f"<p>Conflict auditing needs a visible disagreement. The {switched} poisoned rounds, split "
-        "(exploratory):</p><table>"
-        '<tr><th>After the attack</th><th class="num">Rounds</th><th class="num">Conflict</th>'
-        '<th class="num">Random</th></tr>'
-        f'<tr><td>Look-alikes disagree</td><td class="num">{vis["switched_seeds"]}</td>'
-        f'<td class="num">{pct(vis["conflict_restored"], vis["switched_seeds"])}</td>'
-        f'<td class="num">{pct(vis["random_restored"], vis["switched_seeds"])}</td></tr>'
-        f'<tr><td>No disagreement left</td><td class="num">{hid["switched_seeds"]}</td>'
-        f'<td class="num">{pct(hid["conflict_restored"], hid["switched_seeds"])}</td>'
-        f'<td class="num">{pct(hid["random_restored"], hid["switched_seeds"])}</td></tr></table>'
-        + local_figure("failure-case.svg",
-                       f"Seed {h['trace_seed']}: every flipped tag sits in a look-alike group with no dissent, so "
-                       "conflict auditing had no signal and checked four correct cards.",
-                       f"Audit trace for seed {h['trace_seed']}")
-        + "</section>"
-        '<section><h2><span class="n">7</span>What it means</h2>'
-        "<p class='takeaway'>Disagreement is a free signal worth auditing first, not proof of clean data: "
-        "when poisoned look-alikes all agree, both policies mostly fail.</p>"
-        '<ul class="small">'
-        "<li>Three rules, 24 cards, a perfect oracle at uniform cost.</li>"
-        "<li>A heuristic attacker that ignores the defense; flipping whole look-alike groups could erase "
-        "much of the edge.</li>"
-        "<li>Simulated policies, not measured human play.</li></ul></section>"
-        '<section><h2>Play it, rerun it</h2>'
-        f'<div class="qrrow"><img src="images/qr-repo.svg" alt="QR code for {escape(URL)}"><div>'
-        f'<p class="url">{escape(URL.split("/")[0])}/{escape(URL.split("/")[1])}/<br>{escape(URL.split("/")[2])}</p>'
-        "<p class='small'>Rules, print files, raw results and the code behind every figure.</p></div></div>"
-        '<ul class="small ways">'
-        "<li><b>Online:</b> <code>streamlit run streamlit_app.py</code></li>"
-        "<li><b>Terminal:</b> <code>python3 -m poisoned_dataset play</code></li>"
-        "<li><b>Rerun:</b> <code>python3 -m poisoned_dataset experiment</code></li></ul>"
-        "<p class='refs'>Vassilev et al., <i>Adversarial Machine Learning: A Taxonomy and Terminology</i>, "
-        "NIST AI 100-2e2025. Jha, Hayase and Oh, <i>Label Poisoning is All You Need</i>, NeurIPS 2023.</p>"
-        "</section>")
-
-    body = (f'<div class="poster"><svg class="backdrop" viewBox="0 0 {width * 100:g} {height * 100:g}" aria-hidden="true">'
-            f'<rect width="100%" height="100%" fill="{C["paper"]}"/>'
-            f'{art.grain(art.box(width * 100, height * 100), "poster", .3)}</svg>'
-            f'{header}<div class="columns"><div class="col">{col1}</div><div class="col">{col2}</div>'
-            f'<div class="col">{col3}</div><div class="col">{col4}</div></div>'
-            f'<footer><span>POISONED DATASET · AIPI 590 · APACHE 2.0</span>'
-            f'<span>Protocol v{meta["protocol"]} · evaluation commit {meta["git"]["commit"][:7]} · generated from '
-            f"the repository</span></footer></div>")
+    body = (
+        f'<div class="poster"><svg class="backdrop" viewBox="0 0 {width * 100:g} {height * 100:g}" aria-hidden="true">'
+        '<rect width="100%" height="100%" fill="#f3e8d0"/>'
+        + art.grain(art.box(width * 100, height * 100), "poster", .3) + '</svg>'
+        + header + f'<div class="columns"><div class="col">{col1}</div><div class="col">{col2}</div>'
+        f'<div class="col">{col3}</div></div>'
+        '<footer><div class="line"><span>POISONED DATASET · AIPI 590 · APACHE 2.0</span>'
+        '<span>PRINTABLE + DIGITAL · LEARN THROUGH PLAY, EXPLAIN THROUGH DISCUSSION</span></div>'
+        '<p class="refs">Related work: Vassilev et al., <i>Adversarial Machine Learning: A Taxonomy and Terminology</i>, '
+        'NIST AI 100-2e2025. Jha, Hayase and Oh, <i>Label Poisoning is All You Need</i>, NeurIPS 2023. '
+        'Simulation: protocol v1.0; full methods and results in the repository.</p></footer></div>'
+    )
     style = STYLE.replace("WIDTH", f"{width:g}").replace("HEIGHT", f"{height:g}")
-    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Poisoned Dataset poster</title>'
-            f"<style>{style}</style></head><body>{art.defs(include_cover=True)}{body}</body></html>\n")
+    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Poisoned Dataset teaching poster</title>'
+            f'<style>{style}</style></head><body>{art.defs(include_cover=True)}{body}</body></html>\n')
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build the Poisoned Dataset poster")
+    parser = argparse.ArgumentParser(description="Build the Poisoned Dataset teaching poster")
     parser.add_argument("--width", type=float, default=36, help="Poster width in inches")
     parser.add_argument("--height", type=float, default=24, help="Poster height in inches")
     parser.add_argument("--out", type=Path, default=HERE / "poster.html")
     args = parser.parse_args()
-    (HERE / "figures").mkdir(exist_ok=True)
-    for name, markup in figures().items():
-        (HERE / "figures" / name).write_text(markup, encoding="utf-8")
     args.out.write_text(build(args.width, args.height), encoding="utf-8")
-    print(f"Wrote {args.out} and presentation/figures/")
+    print(f"Wrote {args.out}")
 
 
 if __name__ == "__main__":

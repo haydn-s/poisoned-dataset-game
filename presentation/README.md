@@ -1,20 +1,29 @@
 # Poster
 
-A 36 × 24 in landscape poster for the course showcase, generated from the repository like the rest of the project. It goes to the printer on **November 13, 2026**.
+A 36 × 24 in landscape poster presenting **Poisoned Dataset** as a playable teaching tool for data poisoning and explainable AI.
 
 ![Poster preview](poster-preview.png)
 
+The three-column design leads with the game and a decision for the reader to try:
+
+- **The game:** attacker and defender roles, 24 training cards, and the five stages of a round.
+- **Try a decision:** three large illustrated cargo cards with separate label tags, four audit tokens, and an invitation to explain which label to check. The hand is a conceptual example, not a complete deck or a recorded playtest.
+- **Teaching opportunities:** data integrity, explainability, limited oversight, and generalization, followed by a suggested introduction, play, role swap, and debrief.
+
+The proposed session is about 30 minutes including discussion, following the [playtest guide](../playtest.md). The poster describes intended teaching uses; it does not claim measured learning gains or validated classroom timing. The [observation sheet](../docs/playtest-record.md) provides prompts for formative feedback.
+
+Simulation occupies a small supporting panel, with no result charts or oversized statistical headline. Its numbers still come from [`results/evaluation-v1.0/report/headline.json`](../results/evaluation-v1.0/report/headline.json): 76.0% versus 60.3% deployment accuracy and a +15.8 percentage-point paired difference (95% CI +12.0 to +19.5). These describe automated audit policies on 200 simulated decks in the primary condition: correlated features, directed attacks, an attack ceiling of four flips, and four audits. They are not human playtest or learning outcomes. Displayed accuracy rates use decimal half-up rounding; the contrast uses unrounded paired results. Full evaluation charts remain in [`results/evaluation-v1.0/report/`](../results/evaluation-v1.0/report/).
+
 | File | Contents |
 | --- | --- |
-| `poster.py` | The generator. Every number, table and figure is computed from [`results/evaluation-v1.0/`](../results/evaluation-v1.0), and the art and card images come from the game's own generators. |
-| `poster.html` | The generated poster. Open it in a browser to check it; it loads the figures and images below. |
-| `figures/` | Poster-sized figures: accuracy against attack ceiling in the primary condition, the paired difference in all four conditions, and the seed-1040 failure case. |
-| `images/game-room.jpg` | A 2× capture of the online game room: the defender's audit view in round 1 on deck A, after a directed four-flip attack and one audit that found poison. It was made from a scratch room database, not a real playtest. |
-| `images/qr-repo.svg` | A QR code for `https://github.com/haydn-s/poisoned-dataset-game` (version 4, error correction M, four-module quiet zone), made with [segno](https://pypi.org/project/segno/). It decodes from the rendered PDF. |
-| `poster.pdf` | One 36 × 24 in page, rendered from `poster.html` in headless Chrome. |
-| `poster-preview.png` | A 90 dpi preview of `poster.pdf`, for review only. Print from the PDF. |
+| `poster.py` | Generator for the poster layout, game illustrations, and supporting simulation text. |
+| `poster.html` | Generated poster with inline vector game art; loads the two images below. |
+| `images/game-room.jpg` | A staged online audit view, cropped by the layout to emphasize candidate-rule errors and the chosen rule. The source image is unchanged; it is not a human playtest record. |
+| `images/qr-repo.svg` | Repository QR code, checked against the rendered PDF preview. |
+| `poster.pdf` | One 36 × 24 in page, rendered from the HTML in headless Chrome. |
+| `poster-preview.png` | A 90 dpi preview for review. Print from the PDF. |
 
-It covers what the [roadmap](../docs/roadmap.md) asks of the poster: the research question, game loop, threat model, actual results, failure case, limitations, citations, and a legible link and QR code to the playable artifact and reproducibility materials. It also shows both ways to play, the fixed-deck print edition and the online game room, and the current match tiebreakers.
+The QR opens the repository, which contains the print kit, online setup instructions, playtest guide, code, and results. It does not open a hosted game.
 
 ## Rebuild
 
@@ -23,23 +32,19 @@ From the repository root:
 ```sh
 python3 presentation/poster.py
 python3 tools/render_print.py presentation
+pdftoppm -f 1 -singlefile -r 90 -png presentation/poster.pdf presentation/poster-preview
 ```
 
-The first command rewrites `poster.html` and `figures/`; the second prints `poster.pdf`. The page size comes from the file, so print it with no margins or scaling. For a printer that needs another size, pass `--width` and `--height` in inches to `poster.py`; the layout is tuned for 36 × 24, so check other sizes for overflow before sending them. Column 4 has the least spare room, under a tenth of an inch.
+The first command regenerates the HTML; the second prints the PDF; the third updates the preview using Poppler. The page size comes from the file, so print it with no margins or scaling. The generator accepts `--width` and `--height` in inches, but the design is tuned for 36 × 24; inspect other sizes for overflow before printing.
 
-`tests/test_poster.py` fails if `poster.html` or `figures/` differ from what `poster.py` generates, or if the poster references a missing file, so rebuild and commit them together.
+`tests/test_poster.py` checks that the HTML matches the generator, the supporting statistics match the frozen results, images exist, and reused SVG art has its definitions. Commit the generator, HTML, PDF, and preview together.
 
-## Fonts
+## Fonts and printing
 
-The stylesheet asks for Inter, Inter Display and JetBrains Mono. They are not installed on the machine that rendered the current PDF, so Chrome substituted Helvetica Neue, Helvetica and Menlo, and the layout was checked with those. The PDF embeds the fonts it used, so the printer sees exactly the preview. If you install Inter before rendering again, the text reflows; check column 4 for overflow.
+**Send [`poster.pdf`](poster.pdf) to the print shop.** It follows the Blurred Lens delivery format: one full-size PDF 1.4 page on a 24 × 36 inch sheet. This poster is landscape (36 inches wide × 24 inches high); Blurred Lens was portrait. Print at **actual size / 100%**, with no fit-to-page scaling or added margins. The PNG is a review preview, not the print file.
 
-## Size
+Like the Blurred Lens PDF, this file is the exact finished size, with no added bleed or crop marks. The background and header reach the page edges. Paper, finish, mounting, and other order details are selected separately with the shop.
 
-36 × 24 in (Arch D, landscape) is a stock size at most poster printers and fits a standard tri-fold or easel board. A smaller sheet would push body text below about 16 pt, which is hard to read from a few feet away. Keep this size unless the showcase limits board space.
+The stylesheet requests Inter and Inter Display. The rendering machine uses system fallbacks; all 87 PDF font resources are embedded or contain their own glyph drawings. Main text remains vector, and the PDF contains its images without requiring the HTML or image folder. If the installed fonts change, check the layout again.
 
-## Before printing
-
-- Confirm the printer's required size, bleed and file settings. The file has no bleed area: the amber header band runs to the trim, so ask whether the printer needs bleed added. The footer text sits 0.3 in inside the trim and the panels 0.55 in.
-- Scan the QR code from a full-size test print before sending.
-- Proofread a full-size section printed at 100% on Letter paper to check type sizes and figure legibility.
-- Keep the submitted PDF and the printer's confirmation with the release materials.
+The print check verified one unencrypted 2592 × 1728 point page, included fonts, retained text, a clean PDF render, and a readable repository QR code. A physical proof can additionally confirm the shop's color and paper rendering.
