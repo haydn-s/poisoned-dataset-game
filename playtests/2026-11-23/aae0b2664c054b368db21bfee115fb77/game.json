@@ -1,0 +1,28 @@
+{
+  "version": "digital-0.1",
+  "match_id": "aae0b2664c054b368db21bfee115fb77",
+  "code": "3XBQQZ",
+  "created_at": "2026-11-23T18:44:43.579027+00:00",
+  "revision": 0,
+  "phase": "lobby",
+  "edition": "fixed",
+  "schema_version": 1,
+  "players": {
+    "A": "test"
+  },
+  "budgets": {
+    "flips": 4,
+    "audits": 4
+  },
+  "events": [
+    {
+      "revision": 0,
+      "at": "2026-11-23T18:44:43.579116+00:00",
+      "actor": "A",
+      "action": "create",
+      "phase": "lobby",
+      "round": 0
+    }
+  ],
+  "rounds": []
+}
